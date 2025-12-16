@@ -273,7 +273,11 @@
                     <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3 no-border-bottom">
                         <div class="space-y-1">
                             <label class="medication-label-strong" for="controller-meds">長期控制藥物 (保養藥物)</label>
-                            <input type="text" id="controller-meds" list="controller-meds-list" placeholder="藥物名稱, 劑量" class="block w-full">
+                            <input type="text" id="controller-meds" list="controller-meds-list" placeholder="藥物名稱, 劑量" class="block w-full" 
+                                onkeydown="clearFieldOnBackspace(this)" 
+                                onfocus="this.select();" 
+                                onchange="autoFillFrequency(this, CONTROLLER_FREQ_SELECT, CONTROLLER_MEDS_FREQ)" 
+                                onblur="loadMedicationValue(this, 'controllerMeds', CONTROLLER_MEDS_FREQ, CONTROLLER_FREQ_SELECT)">
                             <datalist id="controller-meds-list">
                                 <option value="吸必擴 SYMBICORT TURBUHALER">吸必擴 SYMBICORT TURBUHALER</option>
                                 <option value="吸必擴 SYMBICORT RAPIHALER">吸必擴 SYMBICORT RAPIHALER</option>
@@ -299,7 +303,11 @@
                     <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3 no-border-bottom">
                         <div class="space-y-1">
                             <label class="medication-label-strong" for="extra-controller-meds">額外保養藥物</label>
-                            <input type="text" id="extra-controller-meds" list="extra-controller-meds-list" placeholder="藥物名稱, 劑量 (選填)" class="block w-full">
+                            <input type="text" id="extra-controller-meds" list="extra-controller-meds-list" placeholder="藥物名稱, 劑量 (選填)" class="block w-full"
+                                onkeydown="clearFieldOnBackspace(this)" 
+                                onfocus="this.select();" 
+                                onchange="autoFillFrequency(this, EXTRA_CONTROLLER_FREQ_SELECT, EXTRA_CONTROLLER_MEDS_FREQ)" 
+                                onblur="loadMedicationValue(this, 'extraControllerMeds', EXTRA_CONTROLLER_MEDS_FREQ, EXTRA_CONTROLLER_FREQ_SELECT)">
                             <datalist id="extra-controller-meds-list">
                                 <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)">適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)</option>
                                 <option value="英克賜易利達 INCRUSE ELLIPTA">英克賜易利達 INCRUSE ELLIPTA</option>
@@ -317,7 +325,11 @@
                     <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="medication-label-strong" for="reliever-meds-input">速效緩解藥物 (急救藥)</label>
-                            <input type="text" id="reliever-meds-input" list="reliever-meds-list" placeholder="藥物名稱, 劑量" class="block w-full">
+                            <input type="text" id="reliever-meds-input" list="reliever-meds-list" placeholder="藥物名稱, 劑量" class="block w-full" 
+                                onkeydown="clearFieldOnBackspace(this)" 
+                                onfocus="this.select();"
+                                onchange="updateRelieverFreq(this.value, RELIEVER_FREQ_SELECT)"
+                                onblur="loadRelieverValue(this, RELIEVER_FREQ_SELECT)">
                             <datalist id="reliever-meds-list">
                                 <option value="同保養藥物">同保養藥物</option>
                                 <option value="吸必擴 SYMBICORT TURBUHALER">吸必擴 SYMBICORT TURBUHALER</option>
@@ -670,7 +682,7 @@
         const LOG_VIEWER_CONTROLS = document.getElementById('log-viewer-controls');
 
 
-        // --- 顏色控制函數 (核心修復) ---
+        // --- 顏色控制函數 ---
 
         /**
          * 設置輸入/選擇元素的字體顏色和類別
@@ -704,6 +716,9 @@
 
         /**
          * 根據藥物名稱，自動帶入對應的頻率 (優化：確保強制覆蓋)
+         * @param {HTMLElement} inputElement 藥物輸入框 (Datalist Input)
+         * @param {HTMLElement} freqSelectElement 頻率選擇框 (Select)
+         * @param {Object} freqMap 藥物頻率映射表
          */
         function autoFillFrequency(inputElement, freqSelectElement, freqMap) {
             const drugName = inputElement.value.trim();
@@ -712,7 +727,7 @@
             if (defaultFreq) {
                 // 找到匹配項，強制設置頻率
                 freqSelectElement.value = defaultFreq;
-                // 自動填充時，標記為已編輯 (深色)
+                // 自動填充時，將其標記為已編輯 (深色)
                 handleInputEdit({ target: freqSelectElement }); 
             } else {
                 // 如果沒有匹配項，則不改變頻率欄位的值
@@ -723,49 +738,58 @@
 
         /**
          * 藥物輸入欄位失焦時，嘗試恢復上次儲存的值
+         * @param {HTMLElement} element 
+         * @param {string} keyName 在 medicationPlan 中的鍵名 ('controllerMeds', 'extraControllerMeds' 或 'relieverMeds')
+         * @param {Object} freqMap 藥物頻率映射表 (Reliever 專用另有邏輯)
+         * @param {HTMLElement} freqSelectElement 頻率選擇框
          */
         function loadMedicationValue(element, keyName, freqMap, freqSelectElement) {
              const currentValue = element.value.trim();
              const storedValue = medicationPlan[keyName] || "";
              
-             // 如果當前值與上次儲存的值不同，或者欄位為空，則更新
-             if (currentValue !== storedValue) {
-                 
-                 if (!currentValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
-                     // 情況1: 用戶清空了欄位，恢復上次儲存的值
-                     element.value = storedValue;
-                     
-                 } else if (currentValue) {
-                     // 情況2: 用戶輸入了新的值，保留新值
-                     element.value = currentValue;
-                 } else {
-                     // 情況3: 欄位為空，且儲存值也是空或默認值
-                     element.value = '';
-                 }
-             }
+             // --- 顏色修復邏輯 ---
              
-             // 重新設定顏色，將決定是淺灰 (儲存值) 還是深色 (未儲存但正在編輯)
-             setElementColor(element, element.value);
+             // 判斷是否應該恢復淺色（即當前值與儲存值一致）
+             let shouldRestoreStoredValue = false;
+             if (!currentValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
+                 // 情況1: 用戶清空了欄位，恢復上次儲存的值
+                 element.value = storedValue;
+                 shouldRestoreStoredValue = true;
+             } else if (currentValue === storedValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
+                 // 情況2: 值與儲存的值一致 (用戶可能沒有改動或輸入後恢復了)
+                 shouldRestoreStoredValue = true;
+             } else if (currentValue !== storedValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
+                 // 情況3: 用戶改動了，保持新值，進入深色編輯狀態
+                 element.value = currentValue;
+                 shouldRestoreStoredValue = false; // 這是新值，不應是淺色
+             } else {
+                 // 情況4: 欄位為空或儲存值為默認，保持現狀
+                 element.value = currentValue;
+                 shouldRestoreStoredValue = false;
+             }
 
-             // 處理頻率欄位的顏色和預設值
+             // 根據最終的 element.value 設置顏色
+             setElementColor(element, element.value);
+             
+             // --- 頻率恢復邏輯 ---
              if (freqSelectElement) {
-                 const currentStoredValue = element.value; // 恢復後的或新的值
-                 const defaultFreq = freqMap[currentStoredValue];
                  const currentFreqStored = medicationPlan[freqSelectElement.id] || "";
                  
-                 if (currentStoredValue === storedValue && currentFreqStored) {
-                    // 如果藥物名稱恢復為儲存值，則頻率也恢復儲存的頻率
+                 if (shouldRestoreStoredValue && currentFreqStored) {
+                     // 如果藥物名稱恢復為儲存值，則頻率也恢復儲存的頻率
                      freqSelectElement.value = currentFreqStored;
-                 } else if (defaultFreq && currentStoredValue === defaultFreq) {
-                     // 如果自動填充的頻率和儲存的一致，也標記為淺色
-                     freqSelectElement.value = defaultFreq;
-                 } else if (defaultFreq) {
-                    // 如果有新的匹配項，但用戶未儲存，則自動填充並標記為深色
-                    freqSelectElement.value = defaultFreq;
-                    handleInputEdit({ target: freqSelectElement });
+                     setElementColor(freqSelectElement, currentFreqStored);
+                 } else if (keyName === 'relieverMeds') {
+                    // 如果是急救藥，頻率邏輯已由 updateRelieverFreq 處理
+                 } else if (currentValue) {
+                     // 如果有當前值，觸發一次自動填充檢查（這會設置深色）
+                    autoFillFrequency(element, freqSelectElement, freqMap);
+                 } else if (!currentValue) {
+                    // 如果藥物欄位最終為空，則清空頻率欄位
+                    freqSelectElement.value = '';
+                    setElementColor(freqSelectElement, '');
                  }
              }
-
         }
         
         /**
@@ -1385,21 +1409,21 @@
             setElementColor(CONTROLLER_MEDS_INPUT, CONTROLLER_MEDS_INPUT.value);
             
             CONTROLLER_FREQ_SELECT.value = data.controllerFreq || '';
-            setElementColor(CONTROLLER_FREQ_SELECT, CONTROLLER_FREQ_SELECT.value);
+            setElementColor(CONTROLLER_FREQ_SELECT, data.controllerFreq);
             
             // 載入輸入框和選擇框並設定顏色 (額外藥物)
             EXTRA_CONTROLLER_MEDS_INPUT.value = data.extraControllerMeds && data.extraControllerMeds !== defaultMeds ? data.extraControllerMeds : '';
-            setElementColor(EXTRA_CONTROLLER_MEDS_INPUT, EXTRA_CONTROLLER_MEDS_INPUT.value);
+            setElementColor(EXTRA_CONTROLLER_MEDS_INPUT, CONTROLLER_MEDS_INPUT.value);
             
             EXTRA_CONTROLLER_FREQ_SELECT.value = data.extraControllerFreq || '';
-            setElementColor(EXTRA_CONTROLLER_FREQ_SELECT, EXTRA_CONTROLLER_FREQ_SELECT.value);
+            setElementColor(EXTRA_CONTROLLER_FREQ_SELECT, data.extraControllerFreq);
             
             // 載入急救藥物
             RELIEVER_MEDS_INPUT.value = data.relieverMeds && data.relieverMeds !== defaultMeds ? data.relieverMeds : '';
             setElementColor(RELIEVER_MEDS_INPUT, RELIEVER_MEDS_INPUT.value);
             
             RELIEVER_FREQ_SELECT.value = data.relieverFreq || '需要時使用'; // 預設值
-            setElementColor(RELIEVER_FREQ_SELECT, RELIEVER_FREQ_SELECT.value);
+            setElementColor(RELIEVER_FREQ_SELECT, data.relieverFreq);
             
             // --- 載入輔助藥物 ---
             const supportSummary = [];
