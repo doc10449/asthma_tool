@@ -3,169 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>居家氣喘行動方案日誌 - 手機優化版</title>
+    <title>居家氣喘行動方案日誌 - 穩定儲存版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    
     <style>
-        /* 模擬 San Francisco/iOS 字體 */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            background-color: #f2f2f7; /* iOS 設置背景色 */
-            color: #1c1c1e; /* iOS 預設深色文字 */
-            font-size: 15px; /* 基底字體調整為 15px */
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f2f2f7;
+            color: #1c1c1e;
+            font-size: 15px;
         }
-        
-        /* 統一卡片容器樣式 */
         .app-card {
             background-color: white;
             border-radius: 10px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); /* 輕微陰影 */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
             margin-bottom: 24px;
-            border: 1px solid #e5e5ea; 
-            overflow: hidden; /* 確保內容在圓角內 */
+            border: 1px solid #e5e5ea;
+            overflow: hidden;
         }
-
-        /* 定義顏色區域 (保持柔和色調) */
-        .zone-green { background-color: #34c759; color: white; border-radius: 8px; padding: 12px; } /* iOS 綠色 */
-        .zone-yellow { background-color: #ff9500; color: white; border-radius: 8px; padding: 12px; } /* iOS 橘色 */
-        .zone-red { background-color: #ff3b30; color: white; border-radius: 8px; padding: 12px; } /* iOS 紅色 */
-        
-        /* 列表容器：模擬 iOS 設置頁面的列表分組 */
-        .list-container {
-            padding: 0;
-        }
-        /* 列表行：底線分隔 */
         .list-row {
             padding: 12px 16px;
             border-bottom: 0.5px solid #e5e5ea;
             display: flex;
-            flex-direction: column; /* 手機上預設垂直堆疊 */
+            flex-direction: column;
             gap: 4px;
         }
-        .list-row:last-child {
-            border-bottom: none;
-        }
-
-        /* 移除兩組控制藥物間的邊線 */
-        .no-border-bottom {
-             border-bottom: none !important;
-        }
-
-        /* 強化藥物區塊的標題字型 */
-        .medication-label-strong {
-            font-weight: 600; /* semi-bold */
-            color: #1c1c1e; /* 確保深色 */
-            display: block; /* 確保佔據一行 */
-            margin-bottom: 4px; /* 與下方輸入框保持距離 */
-        }
-
-
-        /* 移除表單元素邊框和背景，融入列表 */
-        .list-row input:not([type="checkbox"]), 
-        .list-row select, 
-        .list-row textarea {
-            border: 1px solid #d1d1d6 !important; /* 淺灰色邊框 */
-            padding: 8px 12px !important;
+        .list-row:last-child { border-bottom: none; }
+        .list-row input:not([type="checkbox"]), .list-row select, .list-row textarea {
+            border: 1px solid #d1d1d6 !important;
+            padding: 10px 12px !important;
             background-color: white !important;
-            box-shadow: none !important;
             border-radius: 6px !important;
-            font-size: 16px; /* 提高觸控易用性 */
+            font-size: 16px;
+            color: #1c1c1e !important;
         }
-
-        /* 重置 List Style 內的輸入框，使其更簡潔，並讓標籤更明顯 */
-        #profile-section .list-row input, 
-        #profile-section .list-row select {
-            border: 1px solid #d1d1d6 !important;
-            padding: 4px 8px !important;
-        }
-
-        /* 輔助藥物細項輸入框微調 */
-        #support-meds-container input[type="text"] {
-             border: 1px solid #d1d1d6 !important;
-             border-radius: 6px !important;
-             padding: 4px 8px !important;
-             background-color: #f9f9f9 !important;
-             box-shadow: none !important;
-             font-size: 14px;
-             height: 32px;
-             min-width: 0; /* 確保在 flex 佈局中可以縮小 */
-        }
-        
-        /* 確保 Checkbox 佈局在手機上不擠壓 */
-        .support-item-row {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 0.5px solid #e5e5ea;
-        }
-        .support-item-row:last-child {
-            border-bottom: none;
-        }
-        
-        /* PEF 讀數欄位優化 */
-        #log-section input[type="number"] {
-            border: 1px solid #d1d1d6 !important;
-            padding: 10px !important;
-        }
-
-        /* ACT 量表優化: 每個問題獨立成卡片，增加層次感 */
-        .act-question-group {
-            margin-bottom: 16px !important; 
-            padding: 16px !important;
-            background-color: white !important;
-            border-radius: 10px;
-            border: 1px solid #d1d1d6;
-        }
-        .act-question-group label.text-sm { /* 問題標題 */
-            font-size: 16px; /* 問題標題放大 */
-            font-weight: 600; 
-            margin-bottom: 8px;
-            display: block;
-        }
-        .act-question-group div.flex { /* 選項容器 */
-            flex-direction: column; 
-            gap: 10px; /* 增加選項間距 */
-            margin-top: 8px;
-        }
-        .act-question-group label.inline-flex { /* 單個選項 */
-            padding: 6px 0; /* 增加垂直間距以利觸控 */
-            cursor: pointer;
-            width: 100%; 
-            font-size: 14px; /* 選項文字適中 */
-        }
-
-
-        /* 自定義顏色類：淺灰色用於預設值，深灰色用於輸入值 */
-        .input-field-loaded {
-            color: #9ca3af !important; /* 淺灰色 */
-            font-weight: 400; /* 載入數據時使用淺色和輕字體 */
-        }
-        .input-field-edited {
-            color: #1f2937 !important; /* 深黑色 */
-            font-weight: 500; /* 編輯數據時使用深色和中字體 */
-        }
-
-        /* 設置圖表容器，實現水平滾動 */
-        #chart-container {
-            max-width: 100%;
-            overflow-x: auto;
-            min-height: 250px; 
-        }
-        #pef-chart { 
-            height: 300px; /* 固定圖表高度 */
-        } 
-        /* 隱藏/顯示內容 */
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-out;
-        }
-        .collapsible-content.expanded {
-            max-height: 5000px; 
-            transition: max-height 0.6s ease-in;
-        }
+        /* 強化標題 */
+        .medication-label-strong { font-weight: 600; color: #1c1c1e; display: block; margin-bottom: 4px; }
+        /* 顏色區域 */
+        .zone-green { background-color: #34c759; color: white; border-radius: 8px; padding: 12px; }
+        .zone-yellow { background-color: #ff9500; color: white; border-radius: 8px; padding: 12px; }
+        .zone-red { background-color: #ff3b30; color: white; border-radius: 8px; padding: 12px; }
+        /* 顏色狀態類：僅影響字體顏色 */
+        .input-field-loaded { color: #9ca3af !important; }
+        .input-field-edited { color: #1c1c1e !important; }
+        #chart-container { max-width: 100%; overflow-x: auto; min-height: 250px; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .collapsible-content.expanded { max-height: 5000px; transition: max-height 0.6s ease-in; }
     </style>
 </head>
 <body class="p-4 sm:p-6">
@@ -176,1637 +60,271 @@
         <div id="profile-section">
             <h2 class="text-xl font-semibold text-indigo-700 mb-3 ml-2">I. 個人資訊與醫療聯絡方式</h2>
             <form id="profile-form">
-                <div class="app-card list-container space-y-0">
+                <div class="app-card list-container">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 list-row">
                         <div>
-                            <label for="profile-name" class="block text-sm font-medium text-gray-700">姓名:</label>
+                            <label class="block text-sm font-medium text-gray-700">姓名:</label>
                             <input type="text" id="profile-name" required class="block w-full">
                         </div>
                         <div>
-                            <label for="profile-dob" class="block text-sm font-medium text-gray-700">出生年月日:</label>
+                            <label class="block text-sm font-medium text-gray-700">出生年月日:</label>
                             <input type="date" id="profile-dob" class="block w-full">
                         </div>
                     </div>
                     <div class="list-row bg-indigo-50 border-indigo-200">
                         <p class="font-medium">預估年齡: <span id="calculated-age" class="font-semibold text-indigo-800">未輸入</span></p>
                     </div>
-                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 list-row">
                         <div>
-                            <label for="medical-record-number" class="block text-sm font-medium text-gray-700">病歷號:</label>
+                            <label class="block text-sm font-medium text-gray-700">病歷號:</label>
                             <input type="text" id="medical-record-number" required placeholder="例如: 1234567" class="block w-full">
                         </div>
                         <div>
-                            <label for="attending-physician" class="block text-sm font-medium text-gray-700">主治醫師:</label>
+                            <label class="block text-sm font-medium text-gray-700">主治醫師:</label>
                             <input type="text" id="attending-physician" placeholder="例如: 王小明醫師" class="block w-full">
                         </div>
                     </div>
-
-                    <div class="list-row border-t-0">
-                        <p class="text-sm font-semibold text-indigo-800 mb-1">緊急聯絡資訊</p>
-                        <div>
-                            <label for="emergency-phone" class="block text-sm font-medium text-gray-700">聯絡電話:</label>
-                            <input type="tel" id="emergency-phone" class="block w-full">
-                        </div>
+                    <div class="list-row">
+                        <label class="block text-sm font-medium text-gray-700">緊急聯絡電話:</label>
+                        <input type="tel" id="emergency-phone" class="block w-full">
                     </div>
                 </div>
-                
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg mt-4">
-                    儲存個人資料
-                </button>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg mt-2 shadow-md">儲存個人資料</button>
             </form>
         </div>
-        
-        <div id="setup-section">
+
+        <div id="setup-section" class="mt-8">
             <h2 class="text-xl font-semibold text-blue-700 mb-3 ml-2">II. 個人最佳尖峰呼氣流速值 (Personal Best, PB)</h2>
-            <div class="app-card list-container">
-                <div class="list-row">
-                    <p class="text-sm text-gray-700">設定基準 PEF (L/min):</p>
-                    <div class="flex items-center space-x-3 mt-1">
-                        <input type="number" id="pb-pef-input" placeholder="輸入數值" class="flex-grow p-2 border rounded-lg h-10">
-                        <button id="save-pb-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition duration-150 ease-in-out whitespace-nowrap">
-                            儲存
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-2">目前基準 PEF: <span class="font-bold text-base" id="pb-value">未設定</span> L/min</p>
+            <div class="app-card list-container p-4">
+                <p class="text-sm text-gray-700 mb-3">目前基準 PEF: <span class="font-bold text-lg text-blue-600" id="pb-value">未設定</span> L/min</p>
+                <div class="flex items-center space-x-3">
+                    <input type="number" id="pb-pef-input" placeholder="輸入 PB 值" class="flex-grow p-2 border rounded-lg h-12">
+                    <button type="button" id="save-pb-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md whitespace-nowrap">儲存基準</button>
                 </div>
             </div>
         </div>
 
-        <div id="action-plan-guide">
+        <div id="action-plan-guide" class="mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">III. 氣喘惡化應對指南 🚨</h2>
             <div class="app-card p-4 space-y-4">
-
                 <div class="zone-green">
-                    <h3 class="text-lg font-bold mb-1">🟢 綠燈區 — 情況良好</h3>
-                    <p class="text-sm font-medium">PEF 讀數: <span id="pef-green-range">PB 的 80% ~ 100%</span></p>
-                    <ul class="list-disc list-inside text-sm mt-2 font-semibold">
-                        <li>措施: 每日使用**控制藥物**。</li>
-                    </ul>
+                    <h3 class="text-lg font-bold">🟢 綠燈區 — 情況良好</h3>
+                    <p class="text-sm">PEF 讀數: <span id="pef-green-range">PB 的 80% ~ 100%</span></p>
                 </div>
-
                 <div class="zone-yellow">
-                    <h3 class="text-lg font-bold mb-1">🟡 黃燈區 — 小心惡化</h3>
-                    <p class="text-sm font-medium">PEF 讀數: <span id="pef-yellow-range">PB 的 50% ~ 80%</span></p>
-                    <ul class="list-disc list-inside text-sm mt-2 font-semibold">
-                        <li>措施: 立即使用**急救藥**。症狀 24 小時未改善，請儘速回診。</li>
-                    </ul>
+                    <h3 class="text-lg font-bold">🟡 黃燈區 — 小心惡化</h3>
+                    <p class="text-sm">PEF 讀數: <span id="pef-yellow-range">PB 的 50% ~ 80%</span></p>
                 </div>
-
                 <div class="zone-red">
-                    <h3 class="text-lg font-bold mb-1">🔴 紅燈區 — 嚴重發作！</h3>
-                    <p class="text-sm font-medium">PEF 讀數: <span id="pef-red-range">低於 PB 的 50%</span></p>
-                    <ul class="list-disc list-inside text-sm mt-2 font-semibold">
-                        <li>措施: 立即使用急救藥最大劑量。**立即撥打急救電話或前往急診室**。</li>
-                        <li class="mt-2">緊急聯絡電話: <span class="font-bold text-base" id="emergency-contact-phone-display">未記錄</span></li>
-                    </ul>
+                    <h3 class="text-lg font-bold">🔴 紅燈區 — 嚴重發作！</h3>
+                    <p class="text-sm">PEF 讀數: <span id="pef-red-range">低於 PB 的 50%</span></p>
+                    <p class="mt-2">緊急聯絡: <span class="font-bold h-6" id="emergency-contact-display">未記錄</span></p>
                 </div>
             </div>
         </div>
 
-
-        <div id="medication-section">
+        <div id="medication-section" class="mt-8">
             <h2 class="text-xl font-semibold text-purple-700 mb-3 ml-2">IV. 藥物清單與使用方式</h2>
             <form id="medication-form">
-                <div class="app-card list-container space-y-0">
-                    
-                    <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3 no-border-bottom">
-                        <div class="space-y-1">
-                            <label class="medication-label-strong" for="controller-meds">長期控制藥物 (保養藥物)</label>
-                            <input type="text" id="controller-meds" list="controller-meds-list" placeholder="藥物名稱, 劑量" class="block w-full" 
-                                onkeydown="clearFieldOnBackspace(this)" 
-                                onfocus="this.select();" 
-                                onchange="autoFillFrequency(this, CONTROLLER_FREQ_SELECT, CONTROLLER_MEDS_FREQ)" 
-                                onblur="loadMedicationValue(this, 'controllerMeds', CONTROLLER_MEDS_FREQ, CONTROLLER_FREQ_SELECT)">
-                            <datalist id="controller-meds-list">
-                                <option value="吸必擴 SYMBICORT TURBUHALER">吸必擴 SYMBICORT TURBUHALER</option>
-                                <option value="吸必擴 SYMBICORT RAPIHALER">吸必擴 SYMBICORT RAPIHALER</option>
-                                <option value="肺舒坦 FOSTER MDI INHALER">肺舒坦 FOSTER MDI INHALER</option>
-                                <option value="肺舒坦 FOSTER NEXHALER">肺舒坦 FOSTER NEXHALER</option>
-                                <option value="潤娃 RELVAR ELLIPTA">潤娃 RELVAR ELLIPTA</option>
-                                <option value="保衛康 ALVESCO INHALER">保衛康 ALVESCO INHALER</option>
-                                <option value="肺樂喜 TRELEGY ELLIPTA">肺樂喜 TRELEGY ELLIPTA</option>
-                            </datalist>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-sm font-medium text-gray-700" for="controller-freq">常規使用頻率</label>
-                            <select id="controller-freq" class="block w-full bg-white">
-                                <option value="">常規使用頻率</option>
-                                <option value="僅需要時使用">僅需要時使用</option>
-                                <option value="每日一次">每日一次</option>
-                                <option value="每日早晚各一次">每日早晚各一次</option>
-                                <option value="每日早晚各二次">每日早晚各二次</option>
-                            </select>
-                        </div>
+                <div class="app-card list-container">
+                    <div class="list-row no-border-bottom">
+                        <label class="medication-label-strong">長期控制藥物 (保養藥物)</label>
+                        <input type="text" id="controller-meds" list="controller-meds-list" class="block w-full">
+                        <datalist id="controller-meds-list">
+                            <option value="吸必擴 SYMBICORT TURBUHALER">
+                            <option value="吸必擴 SYMBICORT RAPIHALER">
+                            <option value="肺舒坦 FOSTER MDI INHALER">
+                            <option value="肺舒坦 FOSTER NEXHALER">
+                            <option value="潤娃 RELVAR ELLIPTA">
+                            <option value="保衛康 ALVESCO INHALER">
+                            <option value="肺樂喜 TRELEGY ELLIPTA">
+                        </datalist>
+                        <select id="controller-freq" class="block w-full mt-2">
+                            <option value="">選擇頻率</option>
+                            <option value="僅需要時使用">僅需要時使用</option>
+                            <option value="每日一次">每日一次</option>
+                            <option value="每日早晚各一次">每日早晚各一次</option>
+                            <option value="每日早晚各二次">每日早晚各二次</option>
+                        </select>
                     </div>
-                    
-                    <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3 no-border-bottom">
-                        <div class="space-y-1">
-                            <label class="medication-label-strong" for="extra-controller-meds">額外保養藥物</label>
-                            <input type="text" id="extra-controller-meds" list="extra-controller-meds-list" placeholder="藥物名稱, 劑量 (選填)" class="block w-full"
-                                onkeydown="clearFieldOnBackspace(this)" 
-                                onfocus="this.select();" 
-                                onchange="autoFillFrequency(this, EXTRA_CONTROLLER_FREQ_SELECT, EXTRA_CONTROLLER_MEDS_FREQ)" 
-                                onblur="loadMedicationValue(this, 'extraControllerMeds', EXTRA_CONTROLLER_MEDS_FREQ, EXTRA_CONTROLLER_FREQ_SELECT)">
-                            <datalist id="extra-controller-meds-list">
-                                <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)">適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)</option>
-                                <option value="英克賜易利達 INCRUSE ELLIPTA">英克賜易利達 INCRUSE ELLIPTA</option>
-                            </datalist>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-sm font-medium text-gray-700" for="extra-controller-freq">常規使用頻率</label>
-                            <select id="extra-controller-freq" class="block w-full bg-white">
-                                <option value="">常規使用頻率</option>
-                                <option value="每日一次">每日一次</option>
-                            </select>
-                        </div>
+                    <div class="list-row no-border-bottom">
+                        <label class="medication-label-strong">額外保養藥物</label>
+                        <input type="text" id="extra-controller-meds" list="extra-controller-meds-list" class="block w-full">
+                        <datalist id="extra-controller-meds-list">
+                            <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)">
+                            <option value="英克賜易利達 INCRUSE ELLIPTA">
+                        </datalist>
+                        <select id="extra-controller-freq" class="block w-full mt-2">
+                            <option value="">選擇頻率</option>
+                            <option value="每日一次">每日一次</option>
+                        </select>
                     </div>
-
-                    <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="medication-label-strong" for="reliever-meds-input">速效緩解藥物 (急救藥)</label>
-                            <input type="text" id="reliever-meds-input" list="reliever-meds-list" placeholder="藥物名稱, 劑量" class="block w-full" 
-                                onkeydown="clearFieldOnBackspace(this)" 
-                                onfocus="this.select();"
-                                onchange="updateRelieverFreq(this.value, RELIEVER_FREQ_SELECT)"
-                                onblur="loadRelieverValue(this, RELIEVER_FREQ_SELECT)">
-                            <datalist id="reliever-meds-list">
-                                <option value="同保養藥物">同保養藥物</option>
-                                <option value="吸必擴 SYMBICORT TURBUHALER">吸必擴 SYMBICORT TURBUHALER</option>
-                                <option value="吸必擴 SYMBICORT RAPIHALER">吸必擴 SYMBICORT RAPIHALER</option>
-                                <option value="肺舒坦 FOSTER MDI INHALER">肺舒坦 FOSTER MDI INHALER</option>
-                                <option value="肺舒坦 FOSTER NEXHALER">肺舒坦 FOSTER NEXHALER</option>
-                                <option value="備喘全 BERODUAL N MDI">備喘全 BERODUAL N MDI</option>
-                                <option value="備勞喘 BEROTECL N MDI">備勞喘 BEROTECL N MDI</option>
-                            </datalist>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-sm font-medium text-gray-700" for="reliever-freq-select">緩解使用頻率</label>
-                            <select id="reliever-freq-select" class="block w-full bg-white">
-                                <option value="需要時使用">需要時使用</option>
-                                <option value="依主治醫師指示">依主治醫師指示</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="list-row border-b-0">
-                        <label class="medication-label-strong mb-2">輔助藥物 (長期使用):</label>
-                        <div id="support-meds-container" class="space-y-1 mt-1 bg-gray-50 p-3 rounded-lg">
-                            
-                            <div class="support-item-row bg-white rounded-lg px-2">
-                                <input type="checkbox" id="support-oral-steroids" name="support-meds-checkbox" value="口服類固醇" class="form-checkbox text-purple-600 rounded">
-                                <label for="support-oral-steroids" class="text-sm font-medium text-gray-700 ml-2 whitespace-nowrap">口服類固醇:</label>
-                                <input type="text" id="support-oral-steroids-detail" placeholder="細項" class="flex-grow ml-2" disabled>
-                            </div>
-                            <div class="support-item-row bg-white rounded-lg px-2">
-                                <input type="checkbox" id="support-theophylline" name="support-meds-checkbox" value="茶鹼" class="form-checkbox text-purple-600 rounded">
-                                <label for="support-theophylline" class="text-sm font-medium text-gray-700 ml-2 whitespace-nowrap">茶鹼:</label>
-                                <input type="text" id="support-theophylline-detail" placeholder="細項" class="flex-grow ml-2" disabled>
-                            </div>
-                            <div class="support-item-row bg-white rounded-lg px-2">
-                                <input type="checkbox" id="support-leukotriene" name="support-meds-checkbox" value="白三烯受體拮抗劑" class="form-checkbox text-purple-600 rounded">
-                                <label for="support-leukotriene" class="text-sm font-medium text-gray-700 ml-2 whitespace-nowrap">白三烯受體拮抗劑 (欣流):</label>
-                                <input type="text" id="support-leukotriene-detail" placeholder="細項" class="flex-grow ml-2" disabled>
-                            </div>
-                            <div class="support-item-row border-b-0 bg-white rounded-lg px-2">
-                                <input type="checkbox" id="support-biologic" name="support-meds-checkbox" value="生物製劑" class="form-checkbox text-purple-600 rounded">
-                                <label for="support-biologic" class="text-sm font-medium text-gray-700 ml-2 whitespace-nowrap">生物製劑:</label>
-                                <input type="text" id="support-biologic-detail" placeholder="細項" class="flex-grow ml-2" disabled>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition duration-150 ease-in-out">
-                    儲存用藥計畫
-                </button>
-            </form>
-            <div class="mt-4 pt-3 border-t border-purple-200 space-y-1 p-4 bg-gray-50 rounded-b-lg">
-                <p class="text-sm font-medium text-purple-600">當前控制藥物 (保養): <span class="font-semibold" id="current-controller">未記錄</span></p>
-                <p class="text-sm font-medium text-purple-600">使用頻率 (保養): <span class="font-semibold" id="current-freq">未記錄</span></p>
-                <p class="text-sm font-medium text-purple-600">當前額外藥物: <span class="font-semibold" id="current-extra-controller">未記錄</span></p>
-                <p class="text-sm font-medium text-purple-600">常規使用頻率: <span class="font-semibold" id="current-extra-freq">未記錄</span></p>
-                <p class="text-sm font-medium text-purple-600">當前急救藥: <span class="font-semibold" id="current-reliever">未記錄</span></p>
-                <p class="text-sm font-medium text-purple-600">當前輔助藥物: <span class="font-semibold" id="current-support">未記錄</span></p>
-            </div>
-        </div>
-        
-        <div id="trigger-section">
-            <h2 class="text-xl font-semibold text-gray-700 mb-3 ml-2">V. 誘發因子與環境控制</h2>
-            <form id="trigger-form">
-                <div class="app-card list-container space-y-0">
                     <div class="list-row">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">個人已知誘發因子清單 (可複選):</label>
-                        <div id="trigger-options" class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm p-2 bg-gray-50 rounded-lg">
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="塵蟎" class="form-checkbox text-gray-600 rounded"><span class="ml-2">塵蟎</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="花粉" class="form-checkbox text-gray-600 rounded"><span class="ml-2">花粉</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="寵物毛髮" class="form-checkbox text-gray-600 rounded"><span class="ml-2">寵物毛髮</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="二手菸" class="form-checkbox text-gray-600 rounded"><span class="ml-2">二手菸</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="感冒/感染" class="form-checkbox text-gray-600 rounded"><span class="ml-2">感冒/感染</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="運動" class="form-checkbox text-gray-600 rounded"><span class="ml-2">運動</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="冷空氣" class="form-checkbox text-gray-600 rounded"><span class="ml-2">冷空氣</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="情緒壓力" class="form-checkbox text-gray-600 rounded"><span class="ml-2">情緒壓力</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="刺激氣味" class="form-checkbox text-gray-600 rounded"><span class="ml-2">刺激氣味</span></label>
-                            <label class="inline-flex items-center"><input type="checkbox" name="trigger" value="特定食物" class="form-checkbox text-gray-600 rounded"><span class="ml-2">特定食物</span></label>
-                        </div>
-                    </div>
-
-                    <div class="list-row border-b-0">
-                        <label for="control-advice" class="block text-sm font-medium text-gray-700">其他紀錄事項:</label>
-                        <textarea id="control-advice" rows="2" placeholder="例如: 需在運動前15分鐘吸入緩解藥物" class="block w-full border rounded-lg p-2 mt-1"></textarea>
+                        <label class="medication-label-strong">速效緩解藥物 (急救藥)</label>
+                        <input type="text" id="reliever-meds-input" list="reliever-meds-list" class="block w-full">
+                        <datalist id="reliever-meds-list">
+                            <option value="同保養藥物">
+                            <option value="吸必擴 SYMBICORT TURBUHALER">
+                            <option value="吸必擴 SYMBICORT RAPIHALER">
+                            <option value="肺舒坦 FOSTER MDI INHALER">
+                            <option value="肺舒坦 FOSTER NEXHALER">
+                            <option value="備喘全 BERODUAL N MDI">
+                            <option value="備勞喘 BEROTECL N MDI">
+                        </datalist>
+                        <select id="reliever-freq-select" class="block w-full mt-2">
+                            <option value="需要時使用">需要時使用</option>
+                            <option value="依主治醫師指示">依主治醫師指示</option>
+                        </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition duration-150 ease-in-out mt-4">
-                    儲存誘發因子資訊
-                </button>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-md">儲存用藥計畫</button>
             </form>
-            <div class="mt-4 pt-3 border-t border-gray-200 space-y-1 p-4 bg-gray-50 rounded-b-lg">
-                <p class="text-sm font-medium text-gray-600">當前誘發因子: <span class="font-semibold" id="current-triggers">未記錄</span></p>
-            </div>
         </div>
 
-        <div id="log-section" class="hidden">
+        <div id="log-section" class="hidden mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">VI. 自我監測紀錄 (每日記錄)</h2>
-            <form id="asthma-log-form" class="app-card list-container">
-                <div class="list-row grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form id="asthma-log-form" class="app-card p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="pef-morning" class="block text-sm font-medium text-gray-700">早晨 PEF 讀數 (L/min):</label>
-                        <input type="number" id="pef-morning" class="block w-full border rounded-lg" placeholder="選填">
+                        <label class="block text-sm font-medium">早晨 PEF:</label>
+                        <input type="number" id="pef-morning" class="block w-full">
                     </div>
                     <div>
-                        <label for="pef-evening" class="block text-sm font-medium text-gray-700">晚間 PEF 讀數 (L/min):</label>
-                        <input type="number" id="pef-evening" class="block w-full border rounded-lg" placeholder="選填">
+                        <label class="block text-sm font-medium">晚間 PEF:</label>
+                        <input type="number" id="pef-evening" class="block w-full">
                     </div>
                 </div>
-                
-                <div class="list-row">
-                    <label for="symptoms" class="block text-sm font-medium text-gray-700">症狀或誘發因素 (選填):</label>
-                    <textarea id="symptoms" rows="3" class="block w-full border rounded-lg p-2" placeholder="例如: 輕微咳嗽, 運動後, 花粉多"></textarea>
-                </div>
-
-                <div class="p-4 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">氣喘控制測試 (ACT - 過去 4 週)</h3>
-                    <p class="text-sm text-red-600 font-medium mb-4">❗️請誠實評估過去 4 週的狀況，每題 5 分，滿分 25 分。</p>
-                    
-                    <div class="act-question-group">
-                        <label class="text-sm font-medium text-gray-700 mb-2">1. 氣喘對工作/上學/家事影響程度？</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                            <label class="inline-flex items-center"><input type="radio" name="act-q1" value="1" required class="form-radio text-red-500"><span class="ml-1">完全不能勝任 (1)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q1" value="2" required class="form-radio text-yellow-500"><span class="ml-1">經常 (2)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q1" value="3" required class="form-radio text-yellow-500"><span class="ml-1">有些時候 (3)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q1" value="4" required class="form-radio text-green-500"><span class="ml-1">很少 (4)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q1" value="5" required class="form-radio text-green-500"><span class="ml-1">完全不受影響 (5)</span></label>
-                        </div>
-                    </div>
-                    <div class="act-question-group">
-                        <label class="text-sm font-medium text-gray-700 mb-2">2. 氣喘發作呼吸短促的頻率？</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                            <label class="inline-flex items-center"><input type="radio" name="act-q2" value="1" required class="form-radio text-red-500"><span class="ml-1">每天 > 1次 (1)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q2" value="2" required class="form-radio text-yellow-500"><span class="ml-1">每天 1次 (2)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q2" value="3" required class="form-radio text-yellow-500"><span class="ml-1">每週 3-6次 (3)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q2" value="4" required class="form-radio text-green-500"><span class="ml-1">每週 1-2次 (4)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q2" value="5" required class="form-radio text-green-500"><span class="ml-1">完全沒有 (5)</span></label>
-                        </div>
-                    </div>
-                    <div class="act-question-group">
-                        <label class="text-sm font-medium text-gray-700 mb-2">3. 氣喘發作造成夜間醒來的頻率？</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                            <label class="inline-flex items-center"><input type="radio" name="act-q3" value="1" required class="form-radio text-red-500"><span class="ml-1">每週 ≥ 4晚 (1)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q3" value="2" required class="form-radio text-yellow-500"><span class="ml-1">每週 2-3晚 (2)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q3" value="3" required class="form-radio text-yellow-500"><span class="ml-1">每週 1次 (3)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q3" value="4" required class="form-radio text-green-500"><span class="ml-1">每週 < 1晚 (4)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q3" value="5" required class="form-radio text-green-500"><span class="ml-1">完全沒有 (5)</span></label>
-                        </div>
-                    </div>
-                    <div class="act-question-group">
-                        <label class="text-sm font-medium text-gray-700 mb-2">4. 緩解藥物（如支氣管擴張劑）的使用頻率？</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                            <label class="inline-flex items-center"><input type="radio" name="act-q4" value="1" required class="form-radio text-red-500"><span class="ml-1">每天 ≥ 3次 (1)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q4" value="2" required class="form-radio text-yellow-500"><span class="ml-1">每天 1-2次 (2)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q4" value="3" required class="form-radio text-yellow-500"><span class="ml-1">每週 2-3次 (3)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q4" value="4" required class="form-radio text-green-500"><span class="ml-1">每週 ≤ 1次 (4)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q4" value="5" required class="form-radio text-green-500"><span class="ml-1">完全沒有 (5)</span></label>
-                        </div>
-                    </div>
-                    <div class="act-question-group">
-                        <label class="text-sm font-medium text-gray-700 mb-2">5. 您認為過去 4 週內，您的氣喘控制程度為何？</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-                            <label class="inline-flex items-center"><input type="radio" name="act-q5" value="1" required class="form-radio text-red-500"><span class="ml-1">完全未控制 (1)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q5" value="2" required class="form-radio text-yellow-500"><span class="ml-1">控制不佳 (2)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q5" value="3" required class="form-radio text-yellow-500"><span class="ml-1">稍微控制 (3)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q5" value="4" required class="form-radio text-green-500"><span class="ml-1">控制良好 (4)</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="act-q5" value="5" required class="form-radio text-green-500"><span class="ml-1">完全控制 (5)</span></label>
-                        </div>
-                    </div>
-                    
-                    <div id="act-score-display" class="p-3 bg-blue-100 rounded-lg text-sm font-medium text-blue-700 hidden">
-                        本次 ACT 評分：<span id="act-score-value" class="font-bold text-base text-blue-800"></span> / 25
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-4">
-                    記錄並檢查行動區域
-                </button>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-md">存檔並評估</button>
             </form>
-
-            <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-3 ml-2">VII. PEF 趨勢圖與歷史記錄</h2>
-            
-            <div class="app-card p-4">
-                <div id="chart-container">
-                    <canvas id="pef-chart"></canvas>
-                </div>
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-3 ml-2">歷史記錄查閱</h3>
-            <div class="app-card list-container">
-                <p class="text-center text-gray-500 p-4" id="empty-log-msg">尚無記錄。請新增您的第一個 PEF 讀數。</p>
-
-                <div id="log-viewer-controls" class="space-y-3 hidden list-row">
-                    <label for="log-selector" class="block text-sm font-medium text-gray-700">選擇記錄日期：</label>
-                    <select id="log-selector" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"></select>
-                </div>
-                
-                <div id="detailed-log-view" class="p-4 bg-gray-50 hidden">
-                     </div>
-            </div>
-
-            <div class="mt-6 text-center">
-                <p class="text-xs text-gray-600 mb-2 font-medium">請定期將此數據匯出給您的醫療團隊。</p>
-                <button id="export-btn" class="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-                    匯出數據到 Google 表單 (需設定)
-                </button>
-            </div>
-        </div>
-        
-        <div class="max-w-2xl mx-auto mt-4 mb-8">
-            <button id="privacy-toggle" class="w-full text-left font-semibold text-sm text-gray-700 p-3 bg-gray-200 hover:bg-gray-300 rounded-lg flex justify-between items-center transition duration-150" aria-expanded="false">
-                <span>隱私權及授權聲明 (點擊展開)</span>
-                <span id="toggle-icon">▼</span>
-            </button>
-            <div id="privacy-content" class="collapsible-content bg-white p-4 rounded-b-lg border border-gray-200 border-t-0">
-                <h3 class="text-base font-bold text-gray-800 mb-2">1. 資料儲存與隱私權</h3>
-                <p class="text-sm text-gray-700 mb-2">本應用程式為單機版本，所有資料皆儲存於您當前使用的**瀏覽器內建的本地儲存空間 (LocalStorage)**。本院不會自動透過此應用程式收集或存取您的本地數據。</p>
-                <p class="text-sm text-red-700 font-bold mb-4">警告：若您清除瀏覽器快取、更換裝置或使用無痕模式，所有本地儲存的數據將會遺失。</p>
-                
-                <h3 class="text-base font-bold text-gray-800 mb-2">2. 資料匯出</h3>
-                <p class="text-sm text-gray-700">「匯出數據到表單」功能會將您本地數據編碼後，傳輸至本院指定的 Google 表單連結。**此操作需要在新的瀏覽器視窗中，由您手動點擊「提交」，資料才會送達本院。**</p>
-                
-            </div>
         </div>
 
+        <div class="mt-8 p-4 bg-white rounded-lg border text-xs text-gray-500 text-center">
+            最後更新時間：<span id="last-updated-display">--</span>
+        </div>
     </div>
-    
-    <div class="max-w-2xl mx-auto text-right text-xs text-gray-500 pt-3 border-t mt-4">
-        最後更新時間：<span id="last-updated-display"></span>
-    </div>
 
+    <div id="message-box" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300 opacity-0" style="display: none; z-index: 9999;"></div>
 
-    <div id="message-box" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300 opacity-0" style="display: none;"></div>
+    <script>
+        // 全域配置
+        const DEFAULT_EMERGENCY_PHONE = '0287923311#10121';
+        const CONTROLLER_MEDS_FREQ = { "吸必擴 SYMBICORT TURBUHALER": "每日早晚各一次", "吸必擴 SYMBICORT RAPIHALER": "每日早晚各一次", "肺舒坦 FOSTER MDI INHALER": "每日早晚各一次", "肺舒坦 FOSTER NEXHALER": "每日早晚各一次", "潤娃 RELVAR ELLIPTA": "每日一次", "保衛康 ALVESCO INHALER": "每日一次", "肺樂喜 TRELEGY ELLIPTA": "每日一次" };
+        const EXTRA_CONTROLLER_MEDS_FREQ = { "適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)": "每日一次", "英克賜易利達 INCRUSE ELLIPTA": "每日一次" };
 
-    <script type="text/javascript">
-
-        // *************** Google Form 匯出配置 (請替換為您的實際表單 ID) ***************
-        const GOOGLE_FORM_CONFIG = {
-            FORM_BASE_URL: 'https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse?', 
-            ENTRY_IDS: {
-                USER_ID: 'entry.111111111',       
-                NAME: 'entry.222222222',          
-                AGE: 'entry.333333333',           
-                DOB: 'entry.444444444',           
-                RECORD_NO: 'entry.555555555',     
-                PHYSICIAN: 'entry.666666666',     
-                EMERGENCY_CONTACT: 'entry.777777777', 
-                EMERGENCY_PHONE: 'entry.888888888', 
-                PB_PEF: 'entry.999999999',         
-                CONTROLLER_MEDS: 'entry.100000000', 
-                CONTROLLER_FREQ: 'entry.150000000', 
-                EXTRA_CONTROLLER_MEDS: 'entry.170000000',
-                EXTRA_CONTROLLER_FREQ: 'entry.180000000',
-                RELIEVER_MEDS: 'entry.110000000',   
-                RELIEVER_TYPE: 'entry.160000000',  
-                SUPPORT_MEDS: 'entry.140000000',  
-                KNOWN_TRIGGERS: 'entry.120000000',  
-                LOG_HISTORY: 'entry.130000000', 
-            }
-        };
-        // *************************************************************************
-
-        // 全域變數
         let personalBestPEF = null;
-        let pefChart = null; 
-        let allLogs = []; 
-        let userProfile = {};
         let medicationPlan = {};
-        let triggerInfo = {}; 
-        
-        const DEFAULT_VALUE = '未記錄';
-        const DEFAULT_EMERGENCY_PHONE = '0287923311#10121'; // 預設緊急電話
 
-        // 藥物預設頻率配置 (第一組)
-        const CONTROLLER_MEDS_FREQ = {
-            "吸必擴 SYMBICORT TURBUHALER": "每日早晚各一次",
-            "吸必擴 SYMBICORT RAPIHALER": "每日早晚各一次",
-            "肺舒坦 FOSTER MDI INHALER": "每日早晚各一次",
-            "肺舒坦 FOSTER NEXHALER": "每日早晚各一次",
-            "潤娃 RELVAR ELLIPTA": "每日一次",
-            "保衛康 ALVESCO INHALER": "每日一次", // 根據要求修改
-            "肺樂喜 TRELEGY ELLIPTA": "每日一次"
-        };
-        // 藥物預設頻率配置 (第二組)
-        const EXTRA_CONTROLLER_MEDS_FREQ = {
-            "適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)": "每日一次",
-            "英克賜易利達 INCRUSE ELLIPTA": "每日一次"
-        };
-        // 急救藥物預設頻率配置 (左欄變更時，右欄預設為「需要時使用」)
-        const RELIEVER_MEDS_FREQ = {
-            "同保養藥物": "需要時使用",
-            "吸必擴 SYMBICORT TURBUHALER": "需要時使用",
-            "吸必擴 SYMBICORT RAPIHALER": "需要時使用",
-            "肺舒坦 FOSTER MDI INHALER": "需要時使用",
-            "肺舒坦 FOSTER NEXHALER": "需要時使用",
-            "備喘全 BERODUAL N MDI": "需要時使用",
-            "備勞喘 BEROTECL N MDI": "需要時使用",
-        };
-
-        
-        // 圖表配置常數
-        const MAX_CHART_POINTS = 30;
-        const PIXELS_PER_POINT = 40;
-
-        const PB_VALUE_DISPLAY = document.getElementById('pb-value');
-        const MESSAGE_BOX = document.getElementById('message-box');
-        const MEDICATION_FORM = document.getElementById('medication-form');
-        const CONTROLLER_MEDS_INPUT = document.getElementById('controller-meds');
-        const CONTROLLER_FREQ_SELECT = document.getElementById('controller-freq');
-        const EXTRA_CONTROLLER_MEDS_INPUT = document.getElementById('extra-controller-meds');
-        const EXTRA_CONTROLLER_FREQ_SELECT = document.getElementById('extra-controller-freq');
-        const RELIEVER_MEDS_INPUT = document.getElementById('reliever-meds-input');
-        const RELIEVER_FREQ_SELECT = document.getElementById('reliever-freq-select');
-        
-        // 輔助藥物相關的 DOM 元素
-        const SUPPORT_MEDS_MAP = [
-            { id: 'oral-steroids', label: '口服類固醇' },
-            { id: 'theophylline', label: '茶鹼' },
-            { id: 'leukotriene', label: '白三烯受體拮抗劑' },
-            { id: 'biologic', label: '生物製劑' }
-        ];
-
-        
-        const CURRENT_CONTROLLER_DISPLAY = document.getElementById('current-controller');
-        const CURRENT_FREQ_DISPLAY = document.getElementById('current-freq');
-        const CURRENT_EXTRA_CONTROLLER_DISPLAY = document.getElementById('current-extra-controller');
-        const CURRENT_EXTRA_FREQ_DISPLAY = document.getElementById('current-extra-freq');
-        const CURRENT_RELIEVER_DISPLAY = document.getElementById('current-reliever');
-        const CURRENT_SUPPORT_DISPLAY = document.getElementById('current-support'); 
-        
-        const PROFILE_FORM = document.getElementById('profile-form');
-        const PROFILE_DOB_INPUT = document.getElementById('profile-dob');
-        const EXPORT_BUTTON = document.getElementById('export-btn');
-        const ACT_SCORE_VALUE_DISPLAY = document.getElementById('act-score-value');
-        const ACT_SCORE_DISPLAY_BLOCK = document.getElementById('act-score-display');
-        const TRIGGER_FORM = document.getElementById('trigger-form');
-        const CONTROL_ADVICE_TEXTAREA = document.getElementById('control-advice');
-        const CURRENT_TRIGGERS_DISPLAY = document.getElementById('current-triggers');
-        const PEF_GREEN_RANGE_DISPLAY = document.getElementById('pef-green-range');
-        const PEF_YELLOW_RANGE_DISPLAY = document.getElementById('pef-yellow-range');
-        const PEF_RED_RANGE_DISPLAY = document.getElementById('pef-red-range');
-        const EMERGENCY_PHONE_DISPLAY = document.getElementById('emergency-contact-phone-display');
-        const LOG_SECTION = document.getElementById('log-section');
-        const TRIGGER_OPTIONS_CONTAINER = document.getElementById('trigger-options');
-        const LAST_UPDATED_DISPLAY = document.getElementById('last-updated-display');
-        const PRIVACY_TOGGLE = document.getElementById('privacy-toggle');
-        const PRIVACY_CONTENT = document.getElementById('privacy-content');
-        const TOGGLE_ICON = document.getElementById('toggle-icon');
-        const CHART_CONTAINER = document.getElementById('chart-container');
-        const LOG_SELECTOR = document.getElementById('log-selector');
-        const DETAILED_LOG_VIEW = document.getElementById('detailed-log-view');
-        const LOG_VIEWER_CONTROLS = document.getElementById('log-viewer-controls');
-
-
-        // --- 顏色控制函數 ---
-
-        /**
-         * 設置輸入/選擇元素的字體顏色和類別
-         * @param {HTMLElement} element 
-         * @param {string} value 載入的值 (用於判斷是否為空)
-         */
-        function setElementColor(element, value) {
-            const isLoaded = !!value && value !== DEFAULT_VALUE && value !== '';
-            
-            // 移除所有顏色類
-            element.classList.remove('input-field-loaded', 'input-field-edited');
-
-            if (isLoaded) {
-                // 載入時使用淺灰色
-                element.classList.add('input-field-loaded');
-            } else {
-                 // 空值或未儲存時使用深色（讓 Placeholder 清楚）
-                element.classList.add('input-field-edited');
-            }
-        }
-        
-        /**
-         * 處理輸入事件：當用戶開始輸入/選擇時，字體變深
-         * @param {Event} e 
-         */
-        function handleInputEdit(e) {
-            const element = e.target;
-            element.classList.remove('input-field-loaded');
-            element.classList.add('input-field-edited');
-        }
-
-        /**
-         * 根據藥物名稱，自動帶入對應的頻率 (優化：確保強制覆蓋)
-         * @param {HTMLElement} inputElement 藥物輸入框 (Datalist Input)
-         * @param {HTMLElement} freqSelectElement 頻率選擇框 (Select)
-         * @param {Object} freqMap 藥物頻率映射表
-         */
-        function autoFillFrequency(inputElement, freqSelectElement, freqMap) {
-            const drugName = inputElement.value.trim();
-            const defaultFreq = freqMap[drugName];
-            
-            if (defaultFreq) {
-                // 找到匹配項，強制設置頻率
-                freqSelectElement.value = defaultFreq;
-                // 自動填充時，將其標記為已編輯 (深色)
-                handleInputEdit({ target: freqSelectElement }); 
-            } else {
-                // 如果沒有匹配項，則不改變頻率欄位的值
-            }
-            // 標記藥物輸入框顏色 (名稱)
-            setElementColor(inputElement, drugName); 
-        }
-
-        /**
-         * 藥物輸入欄位失焦時，嘗試恢復上次儲存的值
-         * @param {HTMLElement} element 
-         * @param {string} keyName 在 medicationPlan 中的鍵名 ('controllerMeds', 'extraControllerMeds' 或 'relieverMeds')
-         * @param {Object} freqMap 藥物頻率映射表 (Reliever 專用另有邏輯)
-         * @param {HTMLElement} freqSelectElement 頻率選擇框
-         */
-        function loadMedicationValue(element, keyName, freqMap, freqSelectElement) {
-             const currentValue = element.value.trim();
-             const storedValue = medicationPlan[keyName] || "";
-             
-             // --- 顏色修復邏輯 ---
-             
-             // 判斷是否應該恢復淺色（即當前值與儲存值一致）
-             let shouldRestoreStoredValue = false;
-             if (!currentValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
-                 // 情況1: 用戶清空了欄位，恢復上次儲存的值
-                 element.value = storedValue;
-                 shouldRestoreStoredValue = true;
-             } else if (currentValue === storedValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
-                 // 情況2: 值與儲存的值一致 (用戶可能沒有改動或輸入後恢復了)
-                 shouldRestoreStoredValue = true;
-             } else if (currentValue !== storedValue && storedValue !== DEFAULT_VALUE && storedValue !== "") {
-                 // 情況3: 用戶改動了，保持新值，進入深色編輯狀態
-                 element.value = currentValue;
-                 shouldRestoreStoredValue = false; // 這是新值，不應是淺色
-             } else {
-                 // 情況4: 欄位為空或儲存值為默認，保持現狀
-                 element.value = currentValue;
-                 shouldRestoreStoredValue = false;
-             }
-
-             // 根據最終的 element.value 設置顏色
-             setElementColor(element, element.value);
-             
-             // --- 頻率恢復邏輯 ---
-             if (freqSelectElement) {
-                 const currentFreqStored = medicationPlan[freqSelectElement.id] || "";
-                 
-                 if (shouldRestoreStoredValue && currentFreqStored) {
-                     // 如果藥物名稱恢復為儲存值，則頻率也恢復儲存的頻率
-                     freqSelectElement.value = currentFreqStored;
-                     setElementColor(freqSelectElement, currentFreqStored);
-                 } else if (keyName === 'relieverMeds') {
-                    // 如果是急救藥，頻率邏輯已由 updateRelieverFreq 處理
-                 } else if (currentValue) {
-                     // 如果有當前值，觸發一次自動填充檢查（這會設置深色）
-                    autoFillFrequency(element, freqSelectElement, freqMap);
-                 } else if (!currentValue) {
-                    // 如果藥物欄位最終為空，則清空頻率欄位
-                    freqSelectElement.value = '';
-                    setElementColor(freqSelectElement, '');
-                 }
-             }
-        }
-        
-        /**
-         * Backspace 一鍵清除邏輯
-         */
-        function clearFieldOnBackspace(element) {
-            if (event.key === 'Backspace' || event.keyCode === 8) {
-                if (element.value.trim().length > 0) {
-                    // 清空欄位
-                    element.value = '';
-                    setElementColor(element, '');
-                    
-                    // 阻止 Backspace 的預設行為 (例如: 返回上一頁)
-                    event.preventDefault();
-                }
-            }
-        }
-
-        /**
-         * 更新緩解藥物頻率 (專門用於急救藥)
-         */
-        function updateRelieverFreq(drugName, freqSelectElement) {
-            // 急救藥的預設頻率總是「需要時使用」
-            freqSelectElement.value = "需要時使用";
-            handleInputEdit({ target: freqSelectElement });
-            
-            // 確保急救藥輸入框的顏色和值被更新
-            handleInputEdit({ target: RELIEVER_MEDS_INPUT });
-        }
-
-
-        /**
-         * 為所有相關輸入欄位和選擇框添加顏色控制及自動填充邏輯
-         */
-        function initializeColorControl() {
-            // 選擇所有要控制顏色的 input 和 select 元素
-            const fields = document.querySelectorAll(
-                '#profile-form input, #setup-section input, #medication-form input:not([type="checkbox"]), #medication-form select, #trigger-form textarea, #trigger-form input[type="text"]'
-            );
-
-            fields.forEach(field => {
-                // 初始載入時，將所有輸入欄位設置為淺色
-                setElementColor(field, field.value); 
-                
-                // 監聽輸入和選擇事件
-                field.addEventListener('input', handleInputEdit);
-                field.addEventListener('change', handleInputEdit);
-            });
-            
-            // 輔助藥物 Checkbox 邏輯
-            SUPPORT_MEDS_MAP.forEach(med => {
-                const checkbox = document.getElementById(`support-${med.id}`);
-                const detailInput = document.getElementById(`support-${med.id}-detail`);
-
-                checkbox.addEventListener('change', () => {
-                    const isChecked = checkbox.checked;
-                    detailInput.disabled = !isChecked;
-                    
-                    if (isChecked) {
-                        setElementColor(detailInput, detailInput.value); 
-                    } else {
-                        detailInput.value = '';
-                        setElementColor(detailInput, '');
-                    }
-                });
-
-                detailInput.addEventListener('input', handleInputEdit);
-            });
-            
-            // --- 藥物彈性選擇與頻率即時響應邏輯 ---
-
-            // 主藥物
-            CONTROLLER_MEDS_INPUT.addEventListener('focus', function() { this.select(); });
-            CONTROLLER_MEDS_INPUT.addEventListener('blur', function() { loadMedicationValue(this, 'controllerMeds', CONTROLLER_MEDS_FREQ, CONTROLLER_FREQ_SELECT); });
-            CONTROLLER_MEDS_INPUT.addEventListener('change', (e) => {
-                autoFillFrequency(CONTROLLER_MEDS_INPUT, CONTROLLER_FREQ_SELECT, CONTROLLER_MEDS_FREQ);
-            });
-
-            // 額外藥物
-            EXTRA_CONTROLLER_MEDS_INPUT.addEventListener('focus', function() { this.select(); });
-            EXTRA_CONTROLLER_MEDS_INPUT.addEventListener('blur', function() { loadMedicationValue(this, 'extraControllerMeds', EXTRA_CONTROLLER_MEDS_FREQ, EXTRA_CONTROLLER_FREQ_SELECT); });
-            EXTRA_CONTROLLER_MEDS_INPUT.addEventListener('change', (e) => {
-                autoFillFrequency(EXTRA_CONTROLLER_MEDS_INPUT, EXTRA_CONTROLLER_FREQ_SELECT, EXTRA_CONTROLLER_MEDS_FREQ);
-            });
-            
-            // 速效緩解藥物 (急救藥)
-            RELIEVER_MEDS_INPUT.addEventListener('focus', function() { this.select(); });
-            RELIEVER_MEDS_INPUT.addEventListener('blur', function() { loadMedicationValue(this, 'relieverMeds', RELIEVER_MEDS_FREQ, RELIEVER_FREQ_SELECT); });
-            RELIEVER_MEDS_INPUT.addEventListener('change', (e) => {
-                // 當藥物名稱改變時，更新頻率
-                updateRelieverFreq(RELIEVER_MEDS_INPUT.value, RELIEVER_FREQ_SELECT);
-            });
-
-            // 頻率選擇框的 change 事件（用於手動選擇時更新顏色）
-            CONTROLLER_FREQ_SELECT.addEventListener('change', handleInputEdit);
-            EXTRA_CONTROLLER_FREQ_SELECT.addEventListener('change', handleInputEdit);
-            RELIEVER_FREQ_SELECT.addEventListener('change', handleInputEdit);
-        }
-        
-        // --- localStorage 輔助函數 ---
-        function saveDataToLocalStorage(key, data) {
-            try {
-                localStorage.setItem(key, JSON.stringify(data));
-            } catch (error) {
-                console.error(`Error saving ${key} to localStorage:`, error);
-                showMessage('儲存資料失敗 (LocalStorage 錯誤)', 'error');
-            }
-        }
-
-        function loadDataFromLocalStorage(key, defaultValue = {}) {
-            try {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : defaultValue;
-            } catch (error) {
-                console.warn(`Error loading ${key} from localStorage, returning default.`, error);
-                return defaultValue;
-            }
-        }
-        // ------------------------------
-
-        /**
-         * 顯示訊息 box
-         */
-        function showMessage(message, type = 'info') {
-            MESSAGE_BOX.textContent = message;
-            MESSAGE_BOX.style.display = 'block';
-            MESSAGE_BOX.classList.remove('opacity-0', 'bg-red-500', 'bg-green-500', 'bg-blue-500');
-
-            switch (type) {
-                case 'success':
-                    MESSAGE_BOX.classList.add('bg-green-600');
-                    break;
-                case 'error':
-                    MESSAGE_BOX.classList.add('bg-red-600');
-                    break;
-                case 'info':
-                default:
-                    MESSAGE_BOX.classList.add('bg-blue-600');
-                    break;
-            }
-
+        // 訊息顯示
+        function showMessage(msg, type = 'info') {
+            const box = document.getElementById('message-box');
+            box.textContent = msg;
+            box.style.display = 'block';
+            box.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            setTimeout(() => box.style.opacity = '1', 10);
             setTimeout(() => {
-                MESSAGE_BOX.classList.add('opacity-100');
-            }, 10);
-
-            setTimeout(() => {
-                MESSAGE_BOX.classList.remove('opacity-100');
-                setTimeout(() => {
-                    MESSAGE_BOX.style.display = 'none';
-                }, 300);
+                box.style.opacity = '0';
+                setTimeout(() => box.style.display = 'none', 300);
             }, 3000);
         }
 
-        /**
-         * 根據 PEF 讀數和個人最佳 PEF 計算行動方案區域
-         */
-        function calculateZone(reading, pb) {
-            if (!pb || pb <= 0) {
-                return { zone: '未定義', color: 'bg-gray-400', advice: '請先設定個人最佳 PEF。' };
-            }
-
-            const percentage = (reading / pb) * 100;
-            let zone, color, advice;
-
-            if (reading === 0) {
-                 zone = '未記錄PEF';
-                 color = 'bg-gray-500';
-                 advice = '本次未記錄PEF，請根據ACT和症狀評估。';
-            } else if (percentage > 80) {
-                zone = '綠區 (良好)';
-                color = 'zone-green';
-                advice = '氣喘控制良好，繼續目前的治療計畫。';
-            } else if (percentage > 50) {
-                zone = '黃區 (注意)';
-                color = 'zone-yellow';
-                advice = '可能有氣喘惡化跡象。請諮詢您的醫生以調整藥物劑量，並密切注意症狀。';
-            } else {
-                zone = '紅區 (危險)';
-                color = 'zone-red';
-                advice = '這是醫療緊急情況！立即使用快速緩解藥物，並立即尋求醫療協助或撥打緊急電話。';
-            }
-
-            return { zone, color, advice, percentage: percentage.toFixed(0) };
+        // 儲存至 LocalStorage
+        function saveLocal(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
         }
-        
-        /**
-         * 根據出生年月日計算年齡。
-         */
-        function calculateAge(dobString) {
-            if (!dobString) return null;
-            const dob = new Date(dobString);
-            if (isNaN(dob.getTime())) return null;
 
-            const today = new Date();
-            let age = today.getFullYear() - dob.getFullYear();
-            const m = today.getMonth() - dob.getMonth();
+        // 讀取 LocalStorage
+        function loadLocal(key, defaultVal = {}) {
+            const val = localStorage.getItem(key);
+            return val ? JSON.parse(val) : defaultVal;
+        }
+
+        // 核心功能：儲存 PB 基礎值 (加強版)
+        function savePB(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('pb-pef-input');
+            const val = parseInt(input.value);
+
+            if (isNaN(val) || val <= 0) {
+                showMessage("請輸入有效的 PEF 數值", "error");
+                return;
+            }
+
+            personalBestPEF = val;
+            saveLocal('asthma_pb', { personalBestPEF: val, updatedAt: Date.now() });
             
-            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            return age >= 0 ? age : 0; 
+            document.getElementById('pb-value').textContent = val;
+            document.getElementById('log-section').classList.remove('hidden');
+            updateActionPlanRanges(val);
+            showMessage("PB 基礎值已儲存", "success");
         }
 
-        /**
-         * 更新計算年齡的顯示。
-         */
-        function updateCalculatedAgeDisplay(dobString) {
-            const ageDisplay = document.getElementById('calculated-age');
-            const age = calculateAge(dobString);
-            
-            if (age !== null) {
-                ageDisplay.textContent = `${age} 歲`;
-            } else {
-                ageDisplay.textContent = '未輸入';
-            }
-        }
-        
-        /**
-         * 計算 ACT (Asthma Control Test) 分數
-         */
-        function calculateACTScore() {
-            let totalScore = 0;
-            let questionsAnswered = 0;
-            const form = document.getElementById('asthma-log-form');
-
-            for (let i = 1; i <= 5; i++) {
-                const selector = `input[name="act-q${i}"]:checked`;
-                const checkedInput = form.querySelector(selector);
-                
-                if (!checkedInput) {
-                    return null; 
-                }
-                totalScore += parseInt(checkedInput.value, 10);
-                questionsAnswered++;
-            }
-
-            return questionsAnswered === 5 ? totalScore : null;
-        }
-
-        /**
-         * 更新行動計畫指南中的 PEF 範圍顯示。
-         */
         function updateActionPlanRanges(pb) {
-            if (pb && pb > 0) {
-                const greenMin = Math.ceil(pb * 0.8);
-                const yellowMin = Math.ceil(pb * 0.5);
-
-                PEF_GREEN_RANGE_DISPLAY.textContent = `${greenMin} ~ ${pb} L/min (PB 的 80% ~ 100%)`;
-                PEF_YELLOW_RANGE_DISPLAY.textContent = `${yellowMin} ~ ${greenMin - 1} L/min (PB 的 50% ~ 80%)`;
-                PEF_RED_RANGE_DISPLAY.textContent = `低於 ${yellowMin} L/min (低於 PB 的 50%)`;
-            } else {
-                 PEF_GREEN_RANGE_DISPLAY.textContent = 'PB 的 80% ~ 100%';
-                 PEF_YELLOW_RANGE_DISPLAY.textContent = 'PB 的 50% ~ 80%';
-                 PEF_RED_RANGE_DISPLAY.textContent = '低於 PB 的 50%';
-            }
+            const green = Math.ceil(pb * 0.8);
+            const yellow = Math.ceil(pb * 0.5);
+            document.getElementById('pef-green-range').textContent = `${green} ~ ${pb} L/min`;
+            document.getElementById('pef-yellow-range').textContent = `${yellow} ~ ${green - 1} L/min`;
+            document.getElementById('pef-red-range').textContent = `低於 ${yellow} L/min`;
         }
 
+        // 藥物欄位自動帶入與顏色邏輯
+        function setupMedsLogic() {
+            const cInput = document.getElementById('controller-meds');
+            const cFreq = document.getElementById('controller-freq');
+            const eInput = document.getElementById('extra-controller-meds');
+            const eFreq = document.getElementById('extra-controller-freq');
 
-        /**
-         * 繪製 PEF 趨勢圖
-         */
-        function renderPEFChart(logs, pb) {
-            const ctx = document.getElementById('pef-chart');
-
-            if (!ctx || !pb || logs.length === 0) {
-                 if (pefChart) {
-                    pefChart.destroy();
-                    pefChart = null;
-                 }
-                 CHART_CONTAINER.style.display = 'none'; // 隱藏圖表容器
-                 return;
-            }
-            CHART_CONTAINER.style.display = 'block';
-
-            const pefDataForChart = {}; 
-            
-            logs.forEach(log => {
-                const date = new Date(log.timestamp);
-                // 使用 toLocaleDateString 確保時區與日期一致
-                const dateStr = date.toLocaleDateString('zh-TW'); 
-                
-                // Process Morning PEF (AM)
-                if (log.pefMorning !== null && log.pefMorning > 0) {
-                    const key = `${dateStr}-AM`;
-                    // 僅保留該日 AM 區間的最高值
-                    if (!pefDataForChart[key] || log.pefMorning > pefDataForChart[key].pef) {
-                        pefDataForChart[key] = { pef: log.pefMorning, timestamp: log.timestamp, labelSuffix: ' AM' };
-                    }
-                }
-
-                // Process Evening PEF (PM)
-                if (log.pefEvening !== null && log.pefEvening > 0) {
-                    const key = `${dateStr}-PM`;
-                    // 僅保留該日 PM 區間的最高值
-                    if (!pefDataForChart[key] || log.pefEvening > pefDataForChart[key].pef) {
-                        pefDataForChart[key] = { pef: log.pefEvening, timestamp: log.timestamp, labelSuffix: ' PM' };
-                    }
-                }
+            cInput.addEventListener('change', () => {
+                const freq = CONTROLLER_MEDS_FREQ[cInput.value];
+                if (freq) { cFreq.value = freq; cFreq.style.color = "#1c1c1e"; }
+                cInput.style.color = "#1c1c1e";
             });
 
-            // 轉換為陣列並按時間排序（由舊到新）
-            let finalChartData = Object.keys(pefDataForChart).map(key => pefDataForChart[key])
-                .sort((a, b) => a.timestamp - b.timestamp);
-
-
-            const dates = finalChartData.map(data => {
-                const date = new Date(data.timestamp);
-                const monthDay = date.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
-                return `${monthDay}${data.labelSuffix}`;
+            eInput.addEventListener('change', () => {
+                const freq = EXTRA_CONTROLLER_MEDS_FREQ[eInput.value];
+                if (freq) { eFreq.value = freq; eFreq.style.color = "#1c1c1e"; }
+                eInput.style.color = "#1c1c1e";
             });
-            const pefValues = finalChartData.map(data => data.pef);
-            
-            const greenZoneMin = pb * 0.8;
-            const yellowZoneMin = pb * 0.5;
+        }
 
-            // --- 調整圖表寬度以啟用滾動 ---
-            // 每個點給定最小 PIXELS_PER_POINT 寬度，並確保至少為容器寬度
-            const requiredWidth = Math.max(dates.length * PIXELS_PER_POINT, CHART_CONTAINER.offsetWidth);
-            ctx.style.width = `${requiredWidth}px`;
-            
-            // 銷毀舊圖表實例
-            if (pefChart) {
-                pefChart.destroy();
-            }
-
-            // 使用 Chart.js 繪圖表
-            pefChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'PEF 讀數 (L/min)',
-                        borderColor: '#34c759', /* iOS 綠色 */
-                        backgroundColor: 'rgba(52, 199, 89, 0.2)',
-                        data: pefValues,
-                        tension: 0.2, 
-                        fill: true,
-                        pointRadius: 5,
-                        pointHoverRadius: 8,
-                        pointBackgroundColor: pefValues.map(v => {
-                            if (v > greenZoneMin) return '#34c759';
-                            if (v > yellowZoneMin) return '#ff9500';
-                            return '#ff3b30';
-                        })
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, 
-                    // 根據所需寬度調整 aspect ratio
-                    aspectRatio: requiredWidth / 300, 
-                    scales: {
-                        y: {
-                            min: Math.min(0, Math.min(...pefValues)) - 10,
-                            max: pb * 1.1, 
-                            title: {
-                                display: true,
-                                text: 'PEF 讀數 (L/min)'
-                            },
-                            ticks: {
-                                color: '#4b5563',
-                                callback: function(value) {
-                                    if (value === pb) return `${value} (PB)`;
-                                    if (value === greenZoneMin) return `${value} (80%)`;
-                                    if (value === yellowZoneMin) return `${value} (50%)`;
-                                    return value;
-                                }
-                            },
-                            grid: {
-                                color: function(context) {
-                                    const value = context.tick.value;
-                                    if (value === pb) return 'rgba(0, 0, 0, 0.7)';
-                                    if (value === greenZoneMin) return 'rgba(255, 149, 0, 0.8)'; /* 黃區線 */
-                                    if (value === yellowZoneMin) return 'rgba(255, 59, 48, 0.8)'; /* 紅區線 */
-                                    return 'rgba(0, 0, 0, 0.1)';
-                                },
-                                lineWidth: function(context) {
-                                    const value = context.tick.value;
-                                    if (value === pb || value === greenZoneMin || value === yellowZoneMin) return 2;
-                                    return 1;
-                                },
-                                borderDash: function(context) {
-                                    const value = context.tick.value;
-                                    if (value === pb || value === greenZoneMin || value === yellowZoneMin) return [5, 5];
-                                    return [];
-                                },
-                            },
-                            afterBuildTicks: function(scale) {
-                                const values = scale.ticks.map(t => t.value);
-                                
-                                if (!values.includes(pb)) scale.ticks.push({ value: pb, label: '最佳值' });
-                                if (!values.includes(greenZoneMin)) scale.ticks.push({ value: greenZoneMin, label: '80%' });
-                                if (!values.includes(yellowZoneMin)) scale.ticks.push({ value: yellowZoneMin, label: '50%' });
-
-                                scale.ticks.sort((a, b) => a.value - b.value);
-                            }
-                        },
-                        x: {
-                             title: {
-                                display: true,
-                                text: '日期與時段'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true
-                        },
-                        title: {
-                            display: true,
-                            text: `PEF 趨勢圖 (基準: ${pb} L/min)`
-                        }
-                    }
+        // Backspace 清除邏輯
+        function clearFieldOnBackspace(el) {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && el.value.length > 0) {
+                    el.value = '';
+                    e.preventDefault();
                 }
             });
         }
 
-        /**
-         * 顯示單筆選中的歷史記錄詳情
-         * @param {number} index - 記錄在 allLogs 陣列中的索引
-         */
-        function displaySelectedLog(index) {
-            const data = allLogs[index];
-            if (!data) {
-                DETAILED_LOG_VIEW.classList.add('hidden');
-                return;
-            }
-
-            const date = new Date(data.timestamp).toLocaleString('zh-TW', {
-                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
-            });
-
-            const actStatus = data.actScore >= 20 ? '控制良好 (Good Control)' :
-                              data.actScore >= 16 ? '部分控制 (Partial Control)' : '控制不佳 (Poor Control)';
-
-            DETAILED_LOG_VIEW.innerHTML = `
-                <div class="space-y-3">
-                    <p class="text-sm font-medium text-gray-700">記錄時間: <span class="font-bold">${date}</span></p>
-                    <div class="p-3 rounded-lg ${data.zoneColor}">
-                        <p class="text-lg font-bold">最高 PEF 讀數: ${data.pefHighest} L/min (${data.zonePercentage}%)</p>
-                        <p class="text-sm font-semibold mt-1">行動區域: ${data.zone}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <p>早晨 PEF: ${data.pefMorning || '未記錄'}</p>
-                        <p>晚間 PEF: ${data.pefEvening || '未記錄'}</p>
-                        <p>基準值 (PB): ${data.personalBestPEF} L/min</p>
-                    </div>
-                    
-                    <div class="border-t pt-3">
-                        <p class="text-sm font-medium text-blue-700">ACT 評分: <span class="font-bold text-base">${data.actScore} / 25</span></p>
-                        <p class="text-xs text-gray-600">控制評級: ${actStatus}</p>
-                    </div>
-                    
-                    <div class="border-t pt-3">
-                        <p class="text-sm font-medium text-gray-700">症狀或誘發因素:</p>
-                        <p class="text-sm italic pl-2">${data.symptoms || '無'}</p>
-                    </div>
-                </div>
-            `;
-            DETAILED_LOG_VIEW.classList.remove('hidden');
-        }
-
-
-        /**
-         * 儲存個人基本資料
-         */
-        function saveUserProfile(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('profile-name').value.trim();
-            const dob = PROFILE_DOB_INPUT.value;
-            const medicalRecordNumber = document.getElementById('medical-record-number').value.trim(); 
-            const attendingPhysician = document.getElementById('attending-physician').value.trim();
-            const emergencyPhone = document.getElementById('emergency-phone').value.trim();
-            
-            if (!name) {
-                showMessage('錯誤：姓名為必填欄位。', 'error');
-                return;
-            }
-            if (!medicalRecordNumber) {
-                showMessage('錯誤：病歷號為必填欄位。', 'error');
-                return;
-            }
-
-            const calculatedAge = calculateAge(dob);
-
-            userProfile = {
-                name,
-                dob,
-                calculatedAge, 
-                medicalRecordNumber, 
-                attendingPhysician, 
-                emergencyName: DEFAULT_VALUE,
-                emergencyPhone: emergencyPhone || DEFAULT_EMERGENCY_PHONE,
-                updatedAt: Date.now()
-            };
-
-            saveDataToLocalStorage('asthma_profile', userProfile);
-            loadUserProfile(); // 重新載入以更新顏色
-            showMessage('個人資料已成功儲存！', 'success');
-            updateLastUpdatedTime();
-        }
-
-        /**
-         * 載入個人基本資料 (並將值填入輸入框)
-         */
-        function loadUserProfile() {
-            userProfile = loadDataFromLocalStorage('asthma_profile');
-            const data = userProfile;
-
-            const dob = data.dob || '';
-            const phone = data.emergencyPhone || DEFAULT_EMERGENCY_PHONE; // 設置預設電話
-            const inputs = {
-                'profile-name': data.name || '',
-                'profile-dob': dob,
-                'medical-record-number': data.medicalRecordNumber || '',
-                'attending-physician': data.attendingPhysician || '',
-                'emergency-phone': phone,
-            };
-
-            for (const id in inputs) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.value = inputs[id];
-                    setElementColor(element, inputs[id]);
-                }
-            }
-            
-            updateCalculatedAgeDisplay(dob);
-            EMERGENCY_PHONE_DISPLAY.innerHTML = phone ? `<a href="tel:${phone}" class="font-bold text-lg underline hover:text-red-700">${phone}</a>` : DEFAULT_VALUE;
-        }
-
-
-        /**
-         * 儲存當前藥物計畫
-         */
-        function saveMedicationRecord(e) {
-            e.preventDefault();
-
-            const controllerMeds = CONTROLLER_MEDS_INPUT.value.trim();
-            const controllerFreq = CONTROLLER_FREQ_SELECT.value;
-            const extraControllerMeds = EXTRA_CONTROLLER_MEDS_INPUT.value.trim(); // 第二組藥物
-            const extraControllerFreq = EXTRA_CONTROLLER_FREQ_SELECT.value; // 第二組頻率
-            const relieverMeds = RELIEVER_MEDS_INPUT.value.trim(); 
-            const relieverFreq = RELIEVER_FREQ_SELECT.value;
-            
-            // 收集輔助藥物細節
-            const supportDetails = {};
-            SUPPORT_MEDS_MAP.forEach(med => {
-                const checkbox = document.getElementById(`support-${med.id}`);
-                const detailInput = document.getElementById(`support-${med.id}-detail`);
-                
-                if (checkbox.checked) {
-                    const detail = detailInput.value.trim();
-                    // 儲存細項或 "Checked"
-                    supportDetails[med.id] = detail || "Checked"; 
-                }
-            });
-            
-            // 檢查第一組藥物邏輯
-            if (!controllerMeds && controllerFreq && controllerFreq !== '僅需要時使用' && controllerFreq !== '') {
-                if (confirm(`您沒有輸入長期控制藥物名稱，但選擇了常規使用頻率「${controllerFreq}」。確定要儲存嗎？`)) {
-                     // 繼續
-                } else {
-                    return; // 終止儲存
-                }
-            }
-            
-             // 檢查第二組藥物邏輯
-            if (!extraControllerMeds && extraControllerFreq && extraControllerFreq !== '') {
-                if (confirm(`您沒有輸入額外保養藥物名稱，但選擇了常規使用頻率「${extraControllerFreq}」。確定要儲存嗎？`)) {
-                     // 繼續
-                } else {
-                    return; // 終止儲存
-                }
-            }
-            
-            // 處理急救藥物的儲存邏輯
-            let finalRelieverMeds = relieverMeds || DEFAULT_VALUE;
-            let finalRelieverFreq = relieverFreq || DEFAULT_VALUE;
-
-            if (relieverMeds === '同保養藥物') {
-                 finalRelieverMeds = `同保養藥物 (${controllerMeds || '名稱未記錄'})`;
-            }
-
-
-            medicationPlan = {
-                controllerMeds: controllerMeds || DEFAULT_VALUE,
-                controllerFreq: controllerFreq || DEFAULT_VALUE,
-                extraControllerMeds: extraControllerMeds || DEFAULT_VALUE, // 新增
-                extraControllerFreq: extraControllerFreq || DEFAULT_VALUE, // 新增
-                relieverMeds: finalRelieverMeds,
-                relieverFreq: finalRelieverFreq,
-                supportDetails: supportDetails, // 儲存細節對象
-                updatedAt: Date.now()
-            };
-
-            saveDataToLocalStorage('asthma_meds', medicationPlan);
-            
-            loadMedicationRecord(); // 重新載入以更新顏色和顯示
-            
-            showMessage('用藥計畫已成功儲存！', 'success');
-            updateLastUpdatedTime();
-        }
-
-        /**
-         * 載入當前藥物計畫
-         */
-        function loadMedicationRecord() {
-            medicationPlan = loadDataFromLocalStorage('asthma_meds', { supportDetails: {} });
-            const data = medicationPlan;
-            const supportDetails = data.supportDetails || {};
-            const defaultMeds = DEFAULT_VALUE;
-
-            // 載入輸入框和選擇框並設定顏色 (主藥物)
-            CONTROLLER_MEDS_INPUT.value = data.controllerMeds && data.controllerMeds !== defaultMeds ? data.controllerMeds : '';
-            setElementColor(CONTROLLER_MEDS_INPUT, CONTROLLER_MEDS_INPUT.value);
-            
-            CONTROLLER_FREQ_SELECT.value = data.controllerFreq || '';
-            setElementColor(CONTROLLER_FREQ_SELECT, data.controllerFreq);
-            
-            // 載入輸入框和選擇框並設定顏色 (額外藥物)
-            EXTRA_CONTROLLER_MEDS_INPUT.value = data.extraControllerMeds && data.extraControllerMeds !== defaultMeds ? data.extraControllerMeds : '';
-            setElementColor(EXTRA_CONTROLLER_MEDS_INPUT, CONTROLLER_MEDS_INPUT.value);
-            
-            EXTRA_CONTROLLER_FREQ_SELECT.value = data.extraControllerFreq || '';
-            setElementColor(EXTRA_CONTROLLER_FREQ_SELECT, data.extraControllerFreq);
-            
-            // 載入急救藥物
-            RELIEVER_MEDS_INPUT.value = data.relieverMeds && data.relieverMeds !== defaultMeds ? data.relieverMeds : '';
-            setElementColor(RELIEVER_MEDS_INPUT, RELIEVER_MEDS_INPUT.value);
-            
-            RELIEVER_FREQ_SELECT.value = data.relieverFreq || '需要時使用'; // 預設值
-            setElementColor(RELIEVER_FREQ_SELECT, data.relieverFreq);
-            
-            // --- 載入輔助藥物 ---
-            const supportSummary = [];
-            SUPPORT_MEDS_MAP.forEach(med => {
-                const checkbox = document.getElementById(`support-${med.id}`);
-                const detailInput = document.getElementById(`support-${med.id}-detail`);
-                const savedDetail = supportDetails[med.id] || '';
-
-                if (savedDetail) {
-                    checkbox.checked = true;
-                    detailInput.disabled = false;
-                    detailInput.value = savedDetail === "Checked" ? '' : savedDetail;
-                    setElementColor(detailInput, savedDetail);
-                    
-                    // 建立顯示 summary
-                    const labelText = med.label;
-                    supportSummary.push(savedDetail === "Checked" ? labelText : `${labelText}: ${savedDetail}`);
-                } else {
-                    checkbox.checked = false;
-                    detailInput.disabled = true;
-                    detailInput.value = '';
-                    setElementColor(detailInput, '');
-                }
-            });
-
-
-            // 更新顯示區
-            CURRENT_CONTROLLER_DISPLAY.textContent = data.controllerMeds || DEFAULT_VALUE;
-            CURRENT_FREQ_DISPLAY.textContent = data.controllerFreq || DEFAULT_VALUE;
-            CURRENT_EXTRA_CONTROLLER_DISPLAY.textContent = data.extraControllerMeds || DEFAULT_VALUE;
-            CURRENT_EXTRA_FREQ_DISPLAY.textContent = data.extraControllerFreq || DEFAULT_VALUE;
-            CURRENT_RELIEVER_DISPLAY.textContent = data.relieverMeds || DEFAULT_VALUE;
-            CURRENT_SUPPORT_DISPLAY.textContent = supportSummary.join('; ') || DEFAULT_VALUE;
-        }
-        
-        /**
-         * 儲存誘發因子資訊 (邏輯不變)
-         */
-        function saveTriggerInfo(e) {
-            e.preventDefault();
-            
-            const selectedTriggers = Array.from(TRIGGER_OPTIONS_CONTAINER.querySelectorAll('input[name="trigger"]:checked'))
-                .map(checkbox => checkbox.value);
-
-            const controlAdvice = CONTROL_ADVICE_TEXTAREA.value.trim();
-            
-            triggerInfo = {
-                knownTriggers: selectedTriggers,
-                controlAdvice: controlAdvice || DEFAULT_VALUE,
-                updatedAt: Date.now()
-            };
-
-            saveDataToLocalStorage('asthma_triggers', triggerInfo);
-            
-            loadTriggerInfo(); // 重新載入以更新顏色和顯示
-            
-            showMessage('誘發因子資訊已成功儲存！', 'success');
-            updateLastUpdatedTime();
-        }
-
-        /**
-         * 載入誘發因子資訊
-         */
-        function loadTriggerInfo() {
-            triggerInfo = loadDataFromLocalStorage('asthma_triggers', { knownTriggers: [] });
-            const data = triggerInfo;
-            
-            const selectedTriggers = Array.isArray(data.knownTriggers) ? data.knownTriggers : [];
-            TRIGGER_OPTIONS_CONTAINER.querySelectorAll('input[name="trigger"]').forEach(checkbox => {
-                checkbox.checked = selectedTriggers.includes(checkbox.value);
-            });
-
-            CONTROL_ADVICE_TEXTAREA.value = data.controlAdvice && data.controlAdvice !== DEFAULT_VALUE ? data.controlAdvice : '';
-            setElementColor(CONTROL_ADVICE_TEXTAREA, CONTROL_ADVICE_TEXTAREA.value);
-            
-            CURRENT_TRIGGERS_DISPLAY.textContent = selectedTriggers.join(', ') || DEFAULT_VALUE;
-        }
-
-
-        /**
-         * 儲存個人最佳 PEF 基準 (邏輯不變)
-         */
-        function savePersonalBest() {
-            
-            const pbInput = document.getElementById('pb-pef-input');
-            const newPB = parseInt(pbInput.value, 10);
-
-            if (isNaN(newPB) || newPB <= 0) {
-                showMessage('請輸入一個有效的 PEF 數值 (> 0)。', 'error');
-                return;
-            }
-            
-            const pbData = {
-                personalBestPEF: newPB,
-                updatedAt: Date.now()
-            };
-
-            saveDataToLocalStorage('asthma_pb', pbData);
-
-            personalBestPEF = newPB;
-            
-            loadPersonalBest(); // 重新載入以更新顏色和顯示
-            
-            showMessage(`個人最佳 PEF (${newPB}) 已成功儲存！`, 'success');
-            
-            LOG_SECTION.classList.remove('hidden');
-            updateActionPlanRanges(newPB);
-            loadLogs();
-            updateLastUpdatedTime();
-        }
-
-        /**
-         * 載入個人最佳 PEF 基準 (並將值填入輸入框)
-         */
-        function loadPersonalBest() {
-            const pbData = loadDataFromLocalStorage('asthma_pb');
-            personalBestPEF = pbData.personalBestPEF || null;
-            const pbInput = document.getElementById('pb-pef-input');
-
-
-            if (personalBestPEF) {
-                pbInput.value = personalBestPEF;
-                setElementColor(pbInput, pbInput.value);
-                
-                PB_VALUE_DISPLAY.textContent = `${personalBestPEF} L/min`;
-                LOG_SECTION.classList.remove('hidden');
+        // 初始化
+        window.onload = () => {
+            // 讀取 PB
+            const pbData = loadLocal('asthma_pb', null);
+            if (pbData && pbData.personalBestPEF) {
+                personalBestPEF = pbData.personalBestPEF;
+                document.getElementById('pb-value').textContent = personalBestPEF;
+                document.getElementById('pb-pef-input').value = personalBestPEF;
+                document.getElementById('log-section').classList.remove('hidden');
                 updateActionPlanRanges(personalBestPEF);
-            } else {
-                pbInput.value = '';
-                setElementColor(pbInput, '');
-                PB_VALUE_DISPLAY.textContent = '未設定';
-                LOG_SECTION.classList.add('hidden');
-            }
-        }
-
-        /**
-         * 儲存每日 PEF 記錄 (ACT必填，PEF選填)
-         */
-        document.getElementById('asthma-log-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            if (!personalBestPEF) {
-                showMessage('錯誤：請先在步驟 2 設定您的個人最佳 PEF 基準！', 'error');
-                return;
             }
 
-            const pefMorning = parseInt(document.getElementById('pef-morning').value, 10);
-            const pefEvening = parseInt(document.getElementById('pef-evening').value, 10);
-            const symptoms = document.getElementById('symptoms').value.trim();
-            const actScore = calculateACTScore();
+            // 讀取個人資訊 (帶入預設電話)
+            const profile = loadLocal('asthma_profile', { emergencyPhone: DEFAULT_EMERGENCY_PHONE });
+            document.getElementById('emergency-phone').value = profile.emergencyPhone;
+            document.getElementById('emergency-contact-display').textContent = profile.emergencyPhone;
+
+            // 綁定儲存事件
+            document.getElementById('save-pb-btn').addEventListener('click', savePB);
             
-            const pefMorningValid = !isNaN(pefMorning) && pefMorning > 0;
-            const pefEveningValid = !isNaN(pefEvening) && pefEvening > 0;
-            
-            
-            // 檢查 ACT 是否完成 (ACT 必填)
-            if (actScore === null) {
-                showMessage('錯誤: 請完成所有氣喘控制測試 (ACT) 勾選題！', 'error');
-                return;
-            }
+            // 藥物與 Backspace 邏輯
+            setupMedsLogic();
+            clearFieldOnBackspace(document.getElementById('controller-meds'));
+            clearFieldOnBackspace(document.getElementById('extra-controller-meds'));
+            clearFieldOnBackspace(document.getElementById('reliever-meds-input'));
 
-            // PEF 讀數為選填，只檢查是否為有效數值 (不需要強制輸入)
-            // 確定最高的 PEF 值 (如果都沒有，則為 0)
-            const pefHighest = Math.max(pefMorningValid ? pefMorning : 0, pefEveningValid ? pefEvening : 0);
-            
-            const zoneData = calculateZone(pefHighest, personalBestPEF);
-            
-            const newLog = {
-                pefMorning: pefMorningValid ? pefMorning : null,
-                pefEvening: pefEveningValid ? pefEvening : null,
-                pefHighest: pefHighest,
-                symptoms: symptoms,
-                actScore: actScore, 
-                personalBestPEF: personalBestPEF, 
-                zone: zoneData.zone,
-                zonePercentage: zoneData.percentage,
-                zoneColor: zoneData.color,
-                advice: zoneData.advice,
-                timestamp: Date.now() 
-            };
-
-            let logs = loadDataFromLocalStorage('asthma_logs', []);
-            logs.unshift(newLog);
-            saveDataToLocalStorage('asthma_logs', logs);
-
-            showMessage(`記錄成功！ACT 分數為 ${actScore}/25。`, 'success');
-            
-            // 清空當前 PEF/症狀/ACT 輸入，準備記錄下一筆
-            document.getElementById('pef-morning').value = '';
-            document.getElementById('pef-evening').value = '';
-            document.getElementById('symptoms').value = '';
-            
-            const form = document.getElementById('asthma-log-form');
-            form.querySelectorAll('input[type="radio"]').forEach(radio => {
-                radio.checked = false;
-            });
-            
-            loadLogs();
-            updateLastUpdatedTime();
-        });
-
-        /**
-         * 載入並渲染歷史記錄 (邏輯不變)
-         */
-        function loadLogs() {
-            const emptyMsg = document.getElementById('empty-log-msg');
-            const logSelector = LOG_SELECTOR;
-            logSelector.innerHTML = '';
-
-            allLogs = loadDataFromLocalStorage('asthma_logs', []); 
-
-            if (allLogs.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                LOG_VIEWER_CONTROLS.classList.add('hidden');
-                DETAILED_LOG_VIEW.classList.add('hidden');
-                renderPEFChart(allLogs, personalBestPEF); 
-                return;
-            }
-            emptyMsg.classList.add('hidden');
-            LOG_VIEWER_CONTROLS.classList.remove('hidden');
-            DETAILED_LOG_VIEW.classList.remove('hidden');
-
-
-            allLogs.forEach((data, index) => {
-                const date = new Date(data.timestamp).toLocaleString('zh-TW', {
-                    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-                });
-                
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `記錄 #${allLogs.length - index} (${date}) - 最高PEF: ${data.pefHighest}`;
-                logSelector.appendChild(option);
-            });
-
-            if (allLogs.length > 0) {
-                logSelector.value = 0;
-                displaySelectedLog(0);
-            }
-
-            renderPEFChart(allLogs, personalBestPEF);
-        }
-        
-        /**
-         * 更新頁面底部的最後更新時間 (邏輯不變)
-         */
-        function updateLastUpdatedTime() {
-            const now = new Date();
-            LAST_UPDATED_DISPLAY.textContent = now.toLocaleString('zh-TW', {
-                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
-            });
-        }
-
-
-        /**
-         * 匯出所有數據到 Google 表單 (包含所有藥物欄位)
-         */
-        function exportToGoogleForm() {
-            if (EXPORT_BUTTON.disabled) {
-                showMessage('請勿連續點擊，請稍候...', 'info');
-                return;
-            }
-            EXPORT_BUTTON.disabled = true;
-            const originalText = EXPORT_BUTTON.textContent;
-            EXPORT_BUTTON.textContent = '匯出中... 請稍候';
-            
-            setTimeout(() => {
-                EXPORT_BUTTON.disabled = false;
-                EXPORT_BUTTON.textContent = originalText;
-            }, 5000); 
-            
-            if (!userProfile.name || !userProfile.medicalRecordNumber) {
-                showMessage('錯誤：請先在「個人資訊」區塊填寫姓名和病歷號並儲存。', 'error');
-                EXPORT_BUTTON.disabled = false;
-                EXPORT_BUTTON.textContent = originalText;
-                return;
-            }
-
-            if (!personalBestPEF) {
-                showMessage('錯誤: 請先設定個人最佳 PEF 基準。', 'error');
-                EXPORT_BUTTON.disabled = false;
-                EXPORT_BUTTON.textContent = originalText;
-                return;
-            }
-            if (allLogs.length === 0) {
-                showMessage('錯誤: 歷史記錄為空，請先記錄 PEF 讀數。', 'error');
-                EXPORT_BUTTON.disabled = false;
-                EXPORT_BUTTON.textContent = originalText;
-                return;
-            }
-
-            const FORM_URL = GOOGLE_FORM_CONFIG.FORM_BASE_URL;
-            const ENTRY = GOOGLE_FORM_CONFIG.ENTRY_IDS;
-            let params = [];
-            
-            const logsText = allLogs.map((log, index) => {
-                const date = new Date(log.timestamp).toLocaleString('zh-TW');
-                const actInfo = log.actScore !== undefined ? `ACT 評分: ${log.actScore} / 25\n` : ''; 
-                const pefDetails = [];
-                if (log.pefMorning) pefDetails.push(`早: ${log.pefMorning}`);
-                if (log.pefEvening) pefDetails.push(`晚: ${log.pefEvening}`);
-                
-                return `--- #${allLogs.length - index} ---\n` +
-                       `日期: ${date}\n` +
-                       `最高 PEF 讀數: ${log.pefHighest} L/min (${log.zonePercentage}%)\n` +
-                       `PEF 細節: ${pefDetails.join(', ')}\n` +
-                       actInfo + 
-                       `行動區域: ${log.zone}\n` +
-                       `建議: ${log.advice}\n`;
-            }).join('\n');
-            
-            // 格式化輔助藥物細節
-            const supportMedsExport = SUPPORT_MEDS_MAP.map(med => {
-                const savedDetail = medicationPlan.supportDetails[med.id];
-                if (savedDetail) {
-                    const label = med.label;
-                    return savedDetail === "Checked" ? label : `${label}: ${savedDetail}`;
-                }
-                return null;
-            }).filter(item => item !== null).join('; ');
-
-
-            params.push(`${ENTRY.USER_ID}=${encodeURIComponent('LOCAL_STANDALONE')}`); 
-            params.push(`${ENTRY.NAME}=${encodeURIComponent(userProfile.name || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.AGE}=${encodeURIComponent(userProfile.calculatedAge || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.DOB}=${encodeURIComponent(userProfile.dob || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.RECORD_NO}=${encodeURIComponent(userProfile.medicalRecordNumber || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.PHYSICIAN}=${encodeURIComponent(userProfile.attendingPhysician || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.EMERGENCY_CONTACT}=${encodeURIComponent(userProfile.emergencyName || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.EMERGENCY_PHONE}=${encodeURIComponent(userProfile.emergencyPhone || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.PB_PEF}=${encodeURIComponent(personalBestPEF)}`);
-            params.push(`${ENTRY.CONTROLLER_MEDS}=${encodeURIComponent(medicationPlan.controllerMeds || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.CONTROLLER_FREQ}=${encodeURIComponent(medicationPlan.controllerFreq || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.EXTRA_CONTROLLER_MEDS}=${encodeURIComponent(medicationPlan.extraControllerMeds || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.EXTRA_CONTROLLER_FREQ}=${encodeURIComponent(medicationPlan.extraControllerFreq || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.RELIEVER_MEDS}=${encodeURIComponent(medicationPlan.relieverMeds || DEFAULT_VALUE)}`);
-            params.push(`${ENTRY.RELIEVER_TYPE}=${encodeURIComponent(medicationPlan.relieverFreq || DEFAULT_VALUE)}`); // 傳輸頻率而非類型
-            params.push(`${ENTRY.SUPPORT_MEDS}=${encodeURIComponent(supportMedsExport || DEFAULT_VALUE)}`); // 傳輸格式化的輔助藥物
-            params.push(`${ENTRY.KNOWN_TRIGGERS}=${encodeURIComponent(Array.isArray(triggerInfo.knownTriggers) ? triggerInfo.knownTriggers.join(', ') : DEFAULT_VALUE)}`); 
-            params.push(`${ENTRY.LOG_HISTORY}=${encodeURIComponent(logsText)}`);
-
-            const finalUrl = FORM_URL + params.join('&');
-            window.open(finalUrl, '_blank');
-
-            showMessage('數據已匯出到 Google 表單。請在新的視窗中確認並提交。', 'success');
-        }
-
-
-        /**
-         * 初始化應用程式
-         */
-        function initApp() {
-            initializeColorControl(); // 優先初始化顏色控制
-            loadUserProfile();
-            loadPersonalBest(); 
-            loadMedicationRecord();
-            loadTriggerInfo();
-            loadLogs();
-
-            updateLastUpdatedTime(); 
-            
-            PRIVACY_TOGGLE.addEventListener('click', () => {
-                const isExpanded = PRIVACY_CONTENT.classList.toggle('expanded');
-                TOGGLE_ICON.textContent = isExpanded ? '▲' : '▼';
-                PRIVACY_TOGGLE.setAttribute('aria-expanded', isExpanded);
-            });
-            LOG_SELECTOR.addEventListener('change', (e) => {
-                displaySelectedLog(e.target.value);
-            });
-            
-            ACT_SCORE_DISPLAY_BLOCK.classList.add('hidden');
-        }
-
-        // 綁定事件監聽器
-        document.getElementById('save-pb-btn').addEventListener('click', savePersonalBest);
-        MEDICATION_FORM.addEventListener('submit', saveMedicationRecord);
-        PROFILE_FORM.addEventListener('submit', saveUserProfile);
-        TRIGGER_FORM.addEventListener('submit', saveTriggerInfo); 
-        PROFILE_DOB_INPUT.addEventListener('change', (e) => updateCalculatedAgeDisplay(e.target.value));
-        EXPORT_BUTTON.addEventListener('click', exportToGoogleForm);
-
-        // 啟動應用程式
-        window.onload = initApp;
-
+            // 更新最後時間
+            document.getElementById('last-updated-display').textContent = new Date().toLocaleString();
+        };
     </script>
 </body>
 </html>
