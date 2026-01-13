@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣喘日誌 V37 - 聲明修正版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f2f2f7; color: #1c1c1e; font-size: 15px; }
+        .app-card { background-color: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #e5e5ea; overflow: hidden; }
+        .list-row { padding: 12px 16px; border-bottom: 0.5px solid #e5e5ea; display: flex; flex-direction: column; gap: 4px; }
+        .list-row:last-child { border-bottom: none; }
+        input:not([type="checkbox"]), select, textarea { border: 1px solid #d1d1d6 !important; padding: 10px 12px !important; background-color: white !important; border-radius: 6px !important; font-size: 16px; width: 100%; }
+        .medication-label-strong { font-weight: 600; color: #1c1c1e; display: block; margin-bottom: 4px; }
+        .input-field-loaded { color: #9ca3af !important; font-weight: 400; }
+        .input-field-edited { color: #1f2937 !important; font-weight: 500; }
+        .zone-green { background-color: #34c759; color: white; border-radius: 8px; padding: 12px; }
+        .zone-yellow { background-color: #ff9500; color: white; border-radius: 8px; padding: 12px; }
+        .zone-red { background-color: #ff3b30; color: white; border-radius: 8px; padding: 12px; }
+        #chart-container { width: 100%; height: 320px; padding: 10px; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .collapsible-content.expanded { max-height: 5000px; transition: max-height 0.6s ease-in; }
+    </style>
+</head>
+<body class="p-4 sm:p-6">
+    <div id="app" class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">居家氣喘行動方案日誌</h1>
+        <h2 class="text-base text-gray-600 mb-6 border-b pb-2 font-medium">三軍總醫院 胸腔內科</h2>
+
+        <form id="profile-form">
+            <h2 class="text-xl font-semibold text-indigo-700 mb-3 ml-2">I. 個人資訊與醫療聯絡</h2>
+            <div class="app-card">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 list-row">
+                    <div><label class="text-sm font-medium text-gray-700">姓名</label><input type="text" id="p-name" required></div>
+                    <div><label class="text-sm font-medium text-gray-700">出生年月日</label><input type="date" id="p-dob"></div>
+                </div>
+                <div class="list-row bg-indigo-50"><p>預估年齡: <span id="display-age" class="font-bold text-indigo-800">--</span></p></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 list-row">
+                    <div><label class="text-sm font-medium text-gray-700">病歷號</label><input type="text" id="p-record"></div>
+                    <div><label class="text-sm font-medium text-gray-700">主治醫師</label><input type="text" id="p-doc"></div>
+                </div>
+                <div class="list-row"><label class="text-sm font-medium text-gray-700">緊急聯絡電話</label><input type="tel" id="p-phone"></div>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md mb-8">儲存個人資料</button>
+        </form>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold text-blue-700 mb-3 ml-2">II. 個人最佳 PEF 值 (PB)</h2>
+            <div class="app-card p-4">
+                <p class="mb-3">目前基準: <span id="display-pb" class="font-bold text-lg text-blue-600">未設定</span> L/min</p>
+                <div class="flex space-x-3">
+                    <input type="number" id="input-pb" placeholder="輸入 PB 值" class="flex-grow">
+                    <button id="btn-save-pb" type="button" class="bg-blue-600 text-white font-bold px-6 rounded-lg whitespace-nowrap">儲存</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="guide-section" class="mt-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">III. 氣喘惡化應對指南 🚨</h2>
+            <div class="app-card p-4 space-y-4">
+                <div class="zone-green"><h3 class="font-bold">🟢 綠燈區 — 情況良好</h3><p class="text-sm">PEF 讀數: <span id="range-green">請先設定 PB 值</span></p></div>
+                <div class="zone-yellow"><h3 class="font-bold">🟡 黃燈區 — 小心惡化</h3><p class="text-sm">PEF 讀數: <span id="range-yellow">請先設定 PB 值</span></p></div>
+                <div class="zone-red"><h3 class="font-bold">🔴 紅燈區 — 嚴重發作！</h3><p class="text-sm">PEF 讀數: <span id="range-red">請先設定 PB 值</span></p></div>
+            </div>
+        </div>
+
+        <form id="meds-form" class="mt-8">
+            <h2 class="text-xl font-semibold text-purple-700 mb-3 ml-2">IV. 藥物計畫</h2>
+            <div class="app-card">
+                <div class="list-row"><label class="medication-label-strong">長期控制藥物</label><input type="text" id="m-main" list="list-main"><select id="f-main" class="mt-2"><option value="">選擇頻率</option><option value="僅需要時使用">僅需要時使用</option><option value="每日一次">每日一次</option><option value="每日早晚各一次">每日早晚各一次</option><option value="每日早晚各二次">每日早晚各二次</option></select></div>
+                <div class="list-row"><label class="medication-label-strong">額外保養藥物</label><input type="text" id="m-extra" list="list-extra"><select id="f-extra" class="mt-2"><option value="每日一次">每日一次</option></select></div>
+                <div class="list-row"><label class="medication-label-strong">速效緩解藥物</label><input type="text" id="m-reliever" list="list-reliever"><select id="f-reliever" class="mt-2"><option value="需要時使用">需要時使用</option><option value="依主治醫師指示">依主治醫師指示</option></select></div>
+            </div>
+            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg shadow-md">儲存用藥計畫</button>
+        </form>
+
+        <div id="log-input-section" class="mt-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">VI. 自我監測紀錄 (每日記錄)</h2>
+            <form id="log-form" class="app-card p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-sm font-medium">早晨 PEF</label><input type="number" id="l-am" placeholder="L/min"></div>
+                    <div><label class="text-sm font-medium">晚間 PEF</label><input type="number" id="l-pm" placeholder="L/min"></div>
+                </div>
+                <textarea id="l-note" placeholder="備註症狀..." rows="2"></textarea>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-md">儲存今日紀錄</button>
+            </form>
+        </div>
+
+        <div id="history-section" class="mt-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">VII. PEF 趨勢圖與歷史紀錄</h2>
+            <div class="app-card"><div id="chart-container"><canvas id="pef-chart"></canvas></div></div>
+            <div class="app-card p-4">
+                <select id="history-selector" class="mb-4"><option value="">-- 查看歷史紀錄 --</option></select>
+                <div id="history-detail" class="p-4 bg-gray-50 rounded-lg text-sm hidden"></div>
+            </div>
+            <button id="export-btn" class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-md mt-4 transition-colors">傳送最近 30 日數據至三總</button>
+        </div>
+
+        <div class="mt-10">
+            <button id="privacy-toggle" class="w-full text-left text-sm text-gray-500 py-2 border-t flex justify-between">
+                <span>隱私權及授權聲明 (點擊展開)</span>
+                <span id="toggle-icon">▼</span>
+            </button>
+            <div id="privacy-content" class="collapsible-content text-xs text-gray-600 p-2 leading-relaxed">
+                <p>1. 本程式為三軍總醫院胸腔內科提供之單機工具，所有資料皆儲存於您目前的瀏覽器本地空間 (LocalStorage)。<span class="text-red-600 font-bold">警告：若您清除瀏覽器快取或更換手機，資料將會遺失。</span></p>
+                <p class="mt-2">2. 匯出功能僅會抓取過去 30 天內之監測數據進行傳輸，以保護效能與隱私，建議至少每月傳輸一次。</p>
+            </div>
+        </div>
+
+        <div class="mt-8 p-4 text-center text-xs text-gray-400">最後更新：<span id="last-updated">--</span></div>
+    </div>
+
+    <datalist id="list-main">
+        <option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER">
+        <option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER">
+        <option value="潤娃 RELVAR ELLIPTA"><option value="保衛康 ALVESCO INHALER"><option value="肺樂喜 TRELEGY ELLIPTA">
+    </datalist>
+    <datalist id="list-extra">
+        <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)"><option value="英克賜易利達 INCRUSE ELLIPTA">
+    </datalist>
+    <datalist id="list-reliever">
+        <option value="同保養藥物"><option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER">
+        <option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="備喘全 BERODUAL N MDI"><option value="備勞喘 BEROTECL N MDI">
+    </datalist>
+
+    <div id="msg" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold hidden" style="z-index: 9999;"></div>
+
+    <script>
+        const KEYS = { P: 'asthma_p', PB: 'asthma_pb', M: 'asthma_m', LOGS: 'asthma_logs' };
+        // 實際使用時請替換 URL 及 entry ID
+        const FORM_CFG = { 
+            ACTION_URL: 'https://docs.google.com/forms/d/e/您的表單ID/formResponse', 
+            IDS: { NAME: 'entry.1', RECORD: 'entry.2', DOC: 'entry.3', PHONE: 'entry.4', PB: 'entry.5', MEDS: 'entry.6', LOGS: 'entry.7' } 
+        };
+
+        let pefChart = null;
+        let allLogs = [];
+
+        function showMsg(t, s=true) {
+            const b = document.getElementById('msg'); b.textContent = t; 
+            b.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold ${s?'bg-green-600':'bg-red-600'}`;
+            b.classList.remove('hidden'); setTimeout(()=>b.classList.add('hidden'), 3000);
+        }
+
+        function getCleanPB() {
+            const raw = localStorage.getItem(KEYS.PB); if (!raw) return null;
+            try { const p = JSON.parse(raw); return (typeof p === 'object') ? parseInt(p.personalBestPEF) : parseInt(p); } 
+            catch(e) { return parseInt(raw) || null; }
+        }
+
+        function updateRanges(pb) {
+            const val = parseInt(pb); if(!val || isNaN(val)) return;
+            document.getElementById('display-pb').textContent = val + " L/min";
+            document.getElementById('range-green').textContent = `${Math.ceil(val*0.8)} ~ ${val} L/min`;
+            document.getElementById('range-yellow').textContent = `${Math.ceil(val*0.5)} ~ ${Math.ceil(val*0.8)-1} L/min`;
+            document.getElementById('range-red').textContent = `低於 ${Math.ceil(val*0.5)} L/min`;
+            document.getElementById('log-input-section').classList.remove('hidden');
+            document.getElementById('history-section').classList.remove('hidden');
+            renderChart(val);
+        }
+
+        function renderChart(pb) {
+            const ctxEl = document.getElementById('pef-chart'); if (!ctxEl) return;
+            const daily = {};
+            allLogs.forEach(log => {
+                const dKey = new Date(log.date || log.timestamp).toLocaleDateString('zh-TW');
+                const isAM = new Date(log.date || log.timestamp).getHours() < 12;
+                if (!daily[dKey]) daily[dKey] = { am: null, pm: null };
+                const av = log.am || log.pefMorning; const pv = log.pm || log.pefEvening;
+                if (isAM && av) daily[dKey].am = Math.max(daily[dKey].am || 0, av);
+                if (!isAM && pv) daily[dKey].pm = Math.max(daily[dKey].pm || 0, pv);
+                if (!isAM && av) daily[dKey].am = Math.max(daily[dKey].am || 0, av);
+                if (isAM && pv) daily[dKey].pm = Math.max(daily[dKey].pm || 0, pv);
+            });
+            const sorted = Object.keys(daily).sort((a,b) => new Date(a) - new Date(b));
+            const labels = []; const data = []; const colors = [];
+            sorted.forEach(d => {
+                const dd = d.split('/')[1] + '/' + d.split('/')[2];
+                if (daily[d].am !== null) { labels.push(dd + " AM"); data.push(daily[d].am); colors.push('#34c759'); }
+                if (daily[d].pm !== null) { labels.push(dd + " PM"); data.push(daily[d].pm); colors.push('#007aff'); }
+            });
+            if(labels.length === 0) { labels.push(""); data.push(null); }
+            if (pefChart) pefChart.destroy();
+            const gT = Math.ceil(pb * 0.8), rT = Math.ceil(pb * 0.5);
+            pefChart = new Chart(ctxEl.getContext('2d'), {
+                type: 'line', data: { labels: labels, datasets: [{ label: 'PEF 趨勢', data: data, borderColor: '#8e8e93', borderWidth: 2, pointBackgroundColor: colors, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, suggestedMax: pb * 1.1, title: { display: true, text: 'PEF (L/min)' } } } },
+                plugins: [{ id: 'lines', afterDraw(chart) { const {ctx, chartArea: {left, right}, scales: {y}} = chart; ctx.save(); ctx.setLineDash([6, 4]); ctx.lineWidth = 2; const gy = y.getPixelForValue(gT); ctx.strokeStyle = 'rgba(52, 199, 89, 0.7)'; ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke(); ctx.fillStyle = '#34c759'; ctx.fillText(`綠區界: ${gT}`, left+5, gy-5); const ry = y.getPixelForValue(rT); ctx.strokeStyle = 'rgba(255, 59, 48, 0.7)'; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.fillStyle = '#ff3b30'; ctx.fillText(`紅區界: ${rT}`, left+5, ry-5); ctx.restore(); } }]
+            });
+        }
+
+        document.getElementById('export-btn').onclick = async function() {
+            const btn = this; if (btn.disabled) return;
+            btn.disabled = true; const originalText = btn.textContent;
+            btn.textContent = '傳送中...'; btn.classList.replace('bg-pink-600', 'bg-gray-400');
+
+            try {
+                const p = JSON.parse(localStorage.getItem(KEYS.P) || '{}');
+                const m = JSON.parse(localStorage.getItem(KEYS.M) || '{}');
+                const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                const filteredLogs = allLogs.filter(l => (l.date || l.timestamp) >= thirtyDaysAgo);
+                const lTxt = filteredLogs.map(l => `${new Date(l.date||l.timestamp).toLocaleString()}: 早${l.am||'-'}/晚${l.pm||'-'} 備註:${l.note||''}`).join('\n');
+
+                const formData = new FormData();
+                formData.append(FORM_CFG.IDS.NAME, p.name || '');
+                formData.append(FORM_CFG.IDS.RECORD, p.record || '');
+                formData.append(FORM_CFG.IDS.DOC, p.doc || '');
+                formData.append(FORM_CFG.IDS.PHONE, p.phone || '');
+                formData.append(FORM_CFG.IDS.PB, getCleanPB() || '');
+                formData.append(FORM_CFG.IDS.MEDS, `主:${m.main}(${m.fMain}) / 額:${m.extra}(${m.fExtra})`);
+                formData.append(FORM_CFG.IDS.LOGS, lTxt || '30日內無紀錄');
+
+                await fetch(FORM_CFG.ACTION_URL, { method: 'POST', mode: 'no-cors', body: formData });
+                showMsg("最近 30 日數據已成功傳送至三總", true);
+            } catch (err) {
+                showMsg("傳送失敗，請檢查網路連線", false);
+            }
+            setTimeout(() => { btn.disabled = false; btn.textContent = originalText; btn.classList.replace('bg-gray-400', 'bg-pink-600'); }, 5000);
+        };
+
+        function load() {
+            const p = JSON.parse(localStorage.getItem(KEYS.P) || '{}');
+            if(p.name){ document.getElementById('p-name').value=p.name; document.getElementById('p-dob').value=p.dob || ''; document.getElementById('p-record').value=p.record || ''; document.getElementById('p-doc').value=p.doc || ''; document.getElementById('p-phone').value=p.phone || '0287923311#10121'; document.querySelectorAll('#profile-form input').forEach(el => el.value && (el.className='input-field-loaded')); if(p.dob) document.getElementById('display-age').textContent = (new Date().getFullYear()-new Date(p.dob).getFullYear())+" 歲"; }
+            const pb = getCleanPB(); if(pb) { document.getElementById('input-pb').value = pb; updateRanges(pb); }
+            const m = JSON.parse(localStorage.getItem(KEYS.M) || '{}');
+            if(m.main){ const map={'m-main':m.main,'f-main':m.fMain,'m-extra':m.extra,'f-extra':m.fExtra,'m-reliever':m.reliever,'f-reliever':m.fReliever}; for(let id in map){ const el=document.getElementById(id); if(el && map[id]){ el.value=map[id]; el.className='input-field-loaded'; }}}
+            allLogs = JSON.parse(localStorage.getItem(KEYS.LOGS) || '[]');
+            if(allLogs.length > 0) { const s = document.getElementById('history-selector'); s.innerHTML = '<option value="">-- 查看歷史紀錄 --</option>'; allLogs.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${new Date(l.date || l.timestamp).toLocaleString()} (早:${l.am||'-'}/晚:${l.pm||'-'})`; s.appendChild(o); }); if(pb) renderChart(pb); }
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+        }
+
+        document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); const d = { name:document.getElementById('p-name').value, dob:document.getElementById('p-dob').value, record:document.getElementById('p-record').value, doc:document.getElementById('p-doc').value, phone:document.getElementById('p-phone').value }; localStorage.setItem(KEYS.P, JSON.stringify(d)); showMsg("個人資料儲存成功"); };
+        document.getElementById('btn-save-pb').onclick = () => { const v = document.getElementById('input-pb').value; if(!v || v<=0) return showMsg("無效數值", false); localStorage.setItem(KEYS.PB, JSON.stringify({personalBestPEF: v, updatedAt: Date.now()})); updateRanges(parseInt(v)); showMsg("基準值已儲存"); };
+        document.getElementById('meds-form').onsubmit = (e) => { e.preventDefault(); const d = { main:document.getElementById('m-main').value, fMain:document.getElementById('f-main').value, extra:document.getElementById('m-extra').value, fExtra:document.getElementById('f-extra').value, reliever:document.getElementById('m-reliever').value, fReliever:document.getElementById('f-reliever').value }; localStorage.setItem(KEYS.M, JSON.stringify(d)); showMsg("用藥計畫儲存成功"); };
+        document.getElementById('log-form').onsubmit = (e) => { e.preventDefault(); const am = parseInt(document.getElementById('l-am').value), pm = parseInt(document.getElementById('l-pm').value); if(isNaN(am) && isNaN(pm)) return showMsg("請輸入數值", false); allLogs.unshift({ date:Date.now(), am, pm, note:document.getElementById('l-note').value }); localStorage.setItem(KEYS.LOGS, JSON.stringify(allLogs)); location.reload(); };
+        document.getElementById('history-selector').onchange = (e) => { const d = document.getElementById('history-detail'); const l = allLogs[e.target.value]; if(!l) { d.classList.add('hidden'); return; } d.innerHTML = `<p><strong>時間：</strong>${new Date(l.date || l.timestamp).toLocaleString()}</p><p><strong>早晨：</strong>${l.am||'--'} L/min</p><p><strong>晚間：</strong>${l.pm||'--'} L/min</p><p><strong>備註：</strong>${l.note || '無'}</p>`; d.classList.remove('hidden'); };
+        document.getElementById('privacy-toggle').onclick = () => { document.getElementById('privacy-content').classList.toggle('expanded'); document.getElementById('toggle-icon').textContent = document.getElementById('privacy-content').classList.contains('expanded') ? '▲' : '▼'; };
+
+        window.onload = () => {
+            load();
+            const M_FREQ = { "吸必擴 SYMBICORT TURBUHALER": "每日早晚各一次", "吸必擴 SYMBICORT RAPIHALER": "每日早晚各一次", "肺舒坦 FOSTER MDI INHALER": "每日早晚各一次", "肺舒坦 FOSTER NEXHALER": "每日早晚各一次", "潤娃 RELVAR ELLIPTA": "每日一次", "保衛康 ALVESCO INHALER": "每日一次", "肺樂喜 TRELEGY ELLIPTA": "每日一次", "適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)":"每日一次", "英克賜易利達 INCRUSE ELLIPTA":"每日一次" };
+            const setupMeds = (id, fid) => { const el=document.getElementById(id), f=document.getElementById(fid); el.onchange = () => { el.className='input-field-edited'; if(M_FREQ[el.value]){ f.value=M_FREQ[el.value]; f.className='input-field-edited'; } }; };
+            setupMeds('m-main', 'f-main'); setupMeds('m-extra', 'f-extra');
+            document.querySelectorAll('input, select, textarea').forEach(el => el.onfocus = () => el.className = 'input-field-edited');
+        };
+    </script>
+</body>
+</html>
