@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣喘日誌 V41 - 藥物清單更新版</title>
+    <title>氣喘日誌 V42 - 專業指引更新版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
@@ -52,6 +52,13 @@
                 <div class="list-row"><label class="medication-label-strong">長期控制藥物 (保養)</label><input type="text" id="m-main" list="list-main"><select id="f-main" class="mt-2"><option value="">選擇頻率</option><option value="僅需要時使用">僅需要時使用</option><option value="每日一次">每日一次</option><option value="每日早晚各一次">每日早晚各一次</option><option value="每日早晚各二次">每日早晚各二次</option></select></div>
                 <div class="list-row"><label class="medication-label-strong">額外保養藥物</label><input type="text" id="m-extra" list="list-extra"><select id="f-extra" class="mt-2"><option value="每日一次">每日一次</option></select></div>
                 <div class="list-row"><label class="medication-label-strong">速效緩解藥物 (急救)</label><input type="text" id="m-reliever" list="list-reliever"><select id="f-reliever" class="mt-2"><option value="需要時使用">需要時使用</option><option value="依主治醫師指示">依主治醫師指示</option></select></div>
+                
+                <div class="list-row space-y-2 bg-gray-50 py-3">
+                    <label class="medication-label-strong text-purple-800">其他輔助藥物：</label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="茶鹼類藥物"><span>茶鹼類藥物 (如XANTHIUM，THOIN)</span></label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="白三烯素受體拮抗劑"><span>白三烯素受體拮抗劑 (如SINGULAIR)</span></label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="口服支氣管擴張劑"><span>口服支氣管擴張劑 (如MEPTIN，LUNGTEC)</span></label>
+                </div>
             </div>
             <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg shadow-md mb-8">儲存用藥計畫</button>
         </form>
@@ -99,9 +106,21 @@
         <div id="guide-section" class="mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">G. 氣喘惡化應對指南</h2>
             <div class="app-card p-4 space-y-4">
-                <div class="zone-green"><h3 class="font-bold">🟢 綠燈區 — 情況良好</h3><p class="text-sm">PEF 讀數: <span id="range-green">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1">建議：情況良好，可考慮降階治療。</p></div>
-                <div class="zone-yellow"><h3 class="font-bold">🟡 黃燈區 — 小心惡化</h3><p class="text-sm">PEF 讀數: <span id="range-yellow">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1">建議：視症狀適時使用急救藥物。</p></div>
-                <div class="zone-red"><h3 class="font-bold">🔴 紅燈區 — 嚴重發作！</h3><p class="text-sm">PEF 讀數: <span id="range-red">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1 font-bold">建議：請儘速回診或掛急診。</p></div>
+                <div class="zone-green">
+                    <h3 class="font-bold">🟢 綠燈區 — 情況良好</h3>
+                    <p class="text-sm">PEF 讀數: <span id="range-green">請先設定 PB 值</span></p>
+                    <p class="text-xs mt-1 border-t pt-1 leading-relaxed">建議：維持目前的氣喘控制計畫，回診時可與醫師討論降階治療。</p>
+                </div>
+                <div class="zone-yellow">
+                    <h3 class="font-bold">🟡 黃燈區 — 小心惡化</h3>
+                    <p class="text-sm">PEF 讀數: <span id="range-yellow">請先設定 PB 值</span></p>
+                    <p class="text-xs mt-1 border-t pt-1 leading-relaxed">建議：每隔20分鐘吸急救藥物兩下，若20-60分鐘後仍沒有改善，應儘速返診。</p>
+                </div>
+                <div class="zone-red">
+                    <h3 class="font-bold">🔴 紅燈區 — 嚴重發作！</h3>
+                    <p class="text-sm">PEF 讀數: <span id="range-red">請先設定 PB 值</span></p>
+                    <p class="text-xs mt-1 border-t pt-1 font-bold leading-relaxed">建議：立即吸急救藥物4-6下，身邊若有口服類固醇則立即使用。立刻去急診，途中每3-15分鐘再吸4-6下急救藥物。</p>
+                </div>
             </div>
         </div>
 
@@ -121,14 +140,10 @@
         <option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER">
         <option value="使肺泰 SERETIDE EVOHALER">
         <option value="潤娃 RELVAR ELLIPTA"><option value="保衛康 ALVESCO INHALER"><option value="肺樂喜 TRELEGY ELLIPTA">
+        <option value="喘寶 TRIMBOW MDI INHALER"><option value="必肺暢 BREZTRI MDI INHALER">
     </datalist>
-    <datalist id="list-extra">
-        <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)"><option value="英克賜易利達 INCRUSE ELLIPTA">
-    </datalist>
-    <datalist id="list-reliever">
-        <option value="同保養藥物"><option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER">
-        <option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="備喘全 BERODUAL N MDI"><option value="備勞喘 BEROTECL N MDI">
-    </datalist>
+    <datalist id="list-extra"><option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)"><option value="英克賜易利達 INCRUSE ELLIPTA"></datalist>
+    <datalist id="list-reliever"><option value="同保養藥物"><option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER"><option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="備喘全 BERODUAL N MDI"><option value="備勞喘 BEROTECL N MDI"></datalist>
 
     <div id="msg" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold hidden" style="z-index: 9999;"></div>
 
@@ -140,35 +155,32 @@
         function showMsg(t, s=true) { const b = document.getElementById('msg'); b.textContent = t; b.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold ${s?'bg-green-600':'bg-red-600'}`; b.classList.remove('hidden'); setTimeout(()=>b.classList.add('hidden'), 3000); }
 
         function setupTimeGuidedInputs() {
-            const now = new Date(); const hour = now.getHours();
-            const amInput = document.getElementById('l-am'); const pmInput = document.getElementById('l-pm');
-            if (hour < 12) { amInput.disabled = false; pmInput.disabled = true; pmInput.value = ""; } 
-            else { amInput.disabled = true; pmInput.disabled = false; amInput.value = ""; }
+            const h = new Date().getHours(); const ai = document.getElementById('l-am'); const pi = document.getElementById('l-pm');
+            if (h < 12) { ai.disabled = false; pi.disabled = true; pi.value = ""; } else { ai.disabled = true; pi.disabled = false; ai.value = ""; }
         }
 
-        function getCleanPB() { const raw = localStorage.getItem(KEYS.PB); if (!raw) return null; try { const p = JSON.parse(raw); return (typeof p === 'object') ? parseInt(p.personalBestPEF) : parseInt(p); } catch(e) { return parseInt(raw) || null; } }
+        function getCleanPB() { const r = localStorage.getItem(KEYS.PB); if (!r) return null; try { const p = JSON.parse(r); return (typeof p === 'object') ? parseInt(p.personalBestPEF) : parseInt(p); } catch(e) { return parseInt(r) || null; } }
 
         function updateRanges(pb) {
-            const val = parseInt(pb); if(!val || isNaN(val)) return;
-            document.getElementById('display-pb').textContent = val + " L/min";
-            document.getElementById('range-green').textContent = `${Math.ceil(val*0.8)} ~ ${val} L/min`;
-            document.getElementById('range-yellow').textContent = `${Math.ceil(val*0.5)} ~ ${Math.ceil(val*0.8)-1} L/min`;
-            document.getElementById('range-red').textContent = `低於 ${Math.ceil(val*0.5)} L/min`;
+            const v = parseInt(pb); if(!v || isNaN(v)) return;
+            document.getElementById('display-pb').textContent = v + " L/min";
+            document.getElementById('range-green').textContent = `${Math.ceil(v*0.8)} ~ ${v} L/min`;
+            document.getElementById('range-yellow').textContent = `${Math.ceil(v*0.5)} ~ ${Math.ceil(v*0.8)-1} L/min`;
+            document.getElementById('range-red').textContent = `低於 ${Math.ceil(v*0.5)} L/min`;
             document.getElementById('log-input-section').classList.remove('hidden');
             document.getElementById('history-section').classList.remove('hidden');
-            renderChart(val);
+            renderChart(v);
         }
 
         function renderChart(pb) {
             const ctxEl = document.getElementById('pef-chart'); if (!ctxEl) return;
             const daily = {};
             allLogs.forEach(log => {
-                const dKey = new Date(log.date || log.timestamp).toLocaleDateString('zh-TW');
-                const isAM = new Date(log.date || log.timestamp).getHours() < 12;
-                if (!daily[dKey]) daily[dKey] = { am: null, pm: null };
-                const av = log.am || log.pefMorning; const pv = log.pm || log.pefEvening;
-                if (isAM && av) daily[dKey].am = Math.max(daily[dKey].am || 0, av);
-                if (!isAM && pv) daily[dKey].pm = Math.max(daily[dKey].pm || 0, pv);
+                const d = new Date(log.date || log.timestamp).toLocaleDateString('zh-TW'); const h = new Date(log.date || log.timestamp).getHours();
+                if (!daily[d]) daily[d] = { am: null, pm: null };
+                const av = log.am; const pv = log.pm;
+                if (h < 12 && av) daily[d].am = Math.max(daily[d].am || 0, av);
+                if (h >= 12 && pv) daily[d].pm = Math.max(daily[d].pm || 0, pv);
             });
             const sorted = Object.keys(daily).sort((a,b) => new Date(a) - new Date(b));
             const labels = []; const data = []; const colors = [];
@@ -181,35 +193,39 @@
             const gT = Math.ceil(pb * 0.8), rT = Math.ceil(pb * 0.5);
             pefChart = new Chart(ctxEl.getContext('2d'), {
                 type: 'line', data: { labels: labels, datasets: [{ label: 'PEF 趨勢', data: data, borderColor: '#8e8e93', borderWidth: 2, pointBackgroundColor: colors, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, suggestedMax: pb * 1.1, title: { display: true, text: 'PEF (L/min)' } } } },
-                plugins: [{ id: 'lines', afterDraw(chart) { const {ctx, chartArea: {left, right}, scales: {y}} = chart; ctx.save(); ctx.setLineDash([6, 4]); ctx.lineWidth = 2; const gy = y.getPixelForValue(gT); ctx.strokeStyle = 'rgba(52, 199, 89, 0.7)'; ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke(); ctx.fillStyle = '#34c759'; ctx.fillText(`綠界: ${gT}`, left+5, gy-5); const ry = y.getPixelForValue(rT); ctx.strokeStyle = 'rgba(255, 59, 48, 0.7)'; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.fillStyle = '#ff3b30'; ctx.fillText(`紅界: ${rT}`, left+5, ry-5); ctx.restore(); } }]
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, suggestedMax: pb * 1.1 } } },
+                plugins: [{ id: 'lines', afterDraw(chart) { const {ctx, chartArea: {left, right}, scales: {y}} = chart; ctx.save(); ctx.setLineDash([6, 4]); ctx.lineWidth = 2; const gy = y.getPixelForValue(gT); ctx.strokeStyle = 'rgba(52, 199, 89, 0.7)'; ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke(); const ry = y.getPixelForValue(rT); ctx.strokeStyle = 'rgba(255, 59, 48, 0.7)'; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.restore(); } }]
             });
         }
 
+        // 更新 ACT 說明邏輯
         function calculateACT() {
-            let total = 0; document.querySelectorAll('.act-q').forEach(q => total += parseInt(q.value));
-            document.getElementById('act-total').textContent = total; const s = document.getElementById('act-status');
-            if (total === 25) { s.textContent = "完全控制"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white"; }
-            else if (total >= 20) { s.textContent = "控制良好"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white"; }
-            else { s.textContent = "控制不佳"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white"; }
-            return total;
+            let t = 0; document.querySelectorAll('.act-q').forEach(q => t += parseInt(q.value));
+            document.getElementById('act-total').textContent = t; const s = document.getElementById('act-status');
+            if (t === 25) { s.textContent = "完全控制"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white"; }
+            else if (t >= 20) { s.textContent = "控制良好"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white"; }
+            else if (t >= 16) { s.textContent = "控制不佳"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-orange-500 text-white"; }
+            else { s.textContent = "控制極差"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white"; }
+            return t;
         }
 
         document.querySelectorAll('.act-q').forEach(q => q.onchange = calculateACT);
         document.getElementById('btn-save-act').onclick = () => { localStorage.setItem(KEYS.ACT, calculateACT()); showMsg("ACT 分數已儲存"); };
 
         document.getElementById('export-btn').onclick = async function() {
-            const btn = this; if (btn.disabled) return; btn.disabled = true; btn.textContent = '傳送中...'; btn.classList.replace('bg-pink-600', 'bg-gray-400');
+            const b = this; if (b.disabled) return; b.disabled = true; b.textContent = '傳送中...'; b.classList.replace('bg-pink-600', 'bg-gray-400');
             try {
                 const p = JSON.parse(localStorage.getItem(KEYS.P) || '{}'), m = JSON.parse(localStorage.getItem(KEYS.M) || '{}'), act = localStorage.getItem(KEYS.ACT) || '未測驗';
-                const filteredLogs = allLogs.filter(l => (l.date || l.timestamp) >= (Date.now() - 2592000000));
-                const lTxt = filteredLogs.map(l => `${new Date(l.date||l.timestamp).toLocaleString()}: 早${l.am||'-'}/晚${l.pm||'-'}`).join('\n');
+                const fLogs = allLogs.filter(l => (l.date || l.timestamp) >= (Date.now() - 2592000000));
+                const lTxt = fLogs.map(l => `${new Date(l.date||l.timestamp).toLocaleString()}: 早${l.am||'-'}/晚${l.pm||'-'} 備註:${l.note||''}`).join('\n');
+                const checks = []; document.querySelectorAll('.med-check:checked').forEach(c => checks.push(c.value));
                 const formData = new FormData();
                 formData.append(FORM_CFG.IDS.NAME, p.name || ''); formData.append(FORM_CFG.IDS.RECORD, p.record || '');
-                formData.append(FORM_CFG.IDS.PB, getCleanPB() || ''); formData.append(FORM_CFG.IDS.ACT, act); formData.append(FORM_CFG.IDS.LOGS, lTxt);
+                formData.append(FORM_CFG.IDS.PB, getCleanPB() || ''); formData.append(FORM_CFG.IDS.ACT, act);
+                formData.append(FORM_CFG.IDS.MEDS, `主:${m.main} 輔助:${checks.join(',')}`); formData.append(FORM_CFG.IDS.LOGS, lTxt);
                 await fetch(FORM_CFG.ACTION_URL, { method: 'POST', mode: 'no-cors', body: formData }); showMsg("數據已傳送至三總", true);
             } catch (err) { showMsg("傳送失敗", false); }
-            setTimeout(() => { btn.disabled = false; btn.textContent = '傳送最近 30 日數據至三總'; btn.classList.replace('bg-gray-400', 'bg-pink-600'); }, 5000);
+            setTimeout(() => { b.disabled = false; b.textContent = '傳送最近 30 日數據至三總'; b.classList.replace('bg-gray-400', 'bg-pink-600'); }, 5000);
         };
 
         function load() {
@@ -227,8 +243,8 @@
         document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); const d = { name:document.getElementById('p-name').value, dob:document.getElementById('p-dob').value, record:document.getElementById('p-record').value, doc:document.getElementById('p-doc').value, phone:document.getElementById('p-phone').value }; localStorage.setItem(KEYS.P, JSON.stringify(d)); showMsg("個人資料儲存成功"); };
         document.getElementById('btn-save-pb').onclick = () => { const v = document.getElementById('input-pb').value; if(!v || v<=0) return showMsg("無效數值", false); localStorage.setItem(KEYS.PB, JSON.stringify({personalBestPEF: v, updatedAt: Date.now()})); updateRanges(parseInt(v)); showMsg("基準值已儲存"); };
         document.getElementById('meds-form').onsubmit = (e) => { e.preventDefault(); const d = { main:document.getElementById('m-main').value, fMain:document.getElementById('f-main').value, extra:document.getElementById('m-extra').value, fExtra:document.getElementById('f-extra').value, reliever:document.getElementById('m-reliever').value, fReliever:document.getElementById('f-reliever').value }; localStorage.setItem(KEYS.M, JSON.stringify(d)); showMsg("用藥計畫儲存成功"); };
-        document.getElementById('log-form').onsubmit = (e) => { e.preventDefault(); const am = parseInt(document.getElementById('l-am').value), pm = parseInt(document.getElementById('l-pm').value); if(isNaN(am) && isNaN(pm)) return showMsg("請輸入數值", false); allLogs.unshift({ date:Date.now(), am: isNaN(am)?null:am, pm: isNaN(pm)?null:pm, note:document.getElementById('l-note').value }); localStorage.setItem(KEYS.LOGS, JSON.stringify(allLogs)); location.reload(); };
-        document.getElementById('history-selector').onchange = (e) => { const d = document.getElementById('history-detail'); const l = allLogs[e.target.value]; if(!l) { d.classList.add('hidden'); return; } d.innerHTML = `<p><strong>時間：</strong>${new Date(l.date || l.timestamp).toLocaleString()}</p><p><strong>早晨：</strong>${l.am||'--'} L/min</p><p><strong>晚間：</strong>${l.pm||'--'} L/min</p><p><strong>備註：</strong>${l.note || '無'}</p>`; d.classList.remove('hidden'); };
+        document.getElementById('log-form').onsubmit = (e) => { e.preventDefault(); const am = parseInt(document.getElementById('l-am').value); const pm = parseInt(document.getElementById('l-pm').value); if(isNaN(am) && isNaN(pm)) return showMsg("請輸入數值", false); allLogs.unshift({ date:Date.now(), am: isNaN(am)?null:am, pm: isNaN(pm)?null:pm, note:document.getElementById('l-note').value }); localStorage.setItem(KEYS.LOGS, JSON.stringify(allLogs)); location.reload(); };
+        document.getElementById('history-selector').onchange = (e) => { const d = document.getElementById('history-detail'); const l = allLogs[e.target.value]; if(!l) { d.classList.add('hidden'); return; } const amVal = l.am || '--', pmVal = l.pm || '--'; d.innerHTML = `<p><strong>時間：</strong>${new Date(l.date || l.timestamp).toLocaleString()}</p><p><strong>早晨：</strong>${amVal} L/min</p><p><strong>晚間：</strong>${pmVal} L/min</p><p><strong>備註：</strong>${l.note || '無'}</p>`; d.classList.remove('hidden'); };
         document.getElementById('privacy-toggle').onclick = () => { document.getElementById('privacy-content').classList.toggle('expanded'); document.getElementById('toggle-icon').textContent = document.getElementById('privacy-content').classList.contains('expanded') ? '▲' : '▼'; };
 
         window.onload = load;
