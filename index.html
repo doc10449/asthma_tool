@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣喘日誌 V40 - 時段引導版</title>
+    <title>氣喘日誌 V40 - 修正選單版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
@@ -80,7 +80,6 @@
         <div id="log-input-section" class="mt-8 hidden">
             <h2 class="text-xl font-semibold text-green-700 mb-3 ml-2">E. 自我監測紀錄 (每日記錄)</h2>
             <form id="log-form" class="app-card p-4 space-y-4">
-                <div class="bg-blue-50 p-2 rounded text-xs text-blue-800 mb-2">💡 系統已依目前時間引導您輸入對應時段。</div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-sm font-medium">早晨 PEF (AM)</label><input type="number" id="l-am" placeholder="L/min"></div>
                     <div><label class="text-sm font-medium">晚間 PEF (PM)</label><input type="number" id="l-pm" placeholder="L/min"></div>
@@ -120,6 +119,12 @@
     <datalist id="list-main">
         <option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER"><option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="潤娃 RELVAR ELLIPTA"><option value="保衛康 ALVESCO INHALER"><option value="肺樂喜 TRELEGY ELLIPTA">
     </datalist>
+    <datalist id="list-extra">
+        <option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)"><option value="英克賜易利達 INCRUSE ELLIPTA">
+    </datalist>
+    <datalist id="list-reliever">
+        <option value="同保養藥物"><option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER"><option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="備喘全 BERODUAL N MDI"><option value="備勞喘 BEROTECL N MDI">
+    </datalist>
 
     <div id="msg" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold hidden" style="z-index: 9999;"></div>
 
@@ -130,22 +135,11 @@
 
         function showMsg(t, s=true) { const b = document.getElementById('msg'); b.textContent = t; b.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold ${s?'bg-green-600':'bg-red-600'}`; b.classList.remove('hidden'); setTimeout(()=>b.classList.add('hidden'), 3000); }
 
-        // 時間引導邏輯核心
         function setupTimeGuidedInputs() {
-            const now = new Date();
-            const hour = now.getHours();
-            const amInput = document.getElementById('l-am');
-            const pmInput = document.getElementById('l-pm');
-
-            if (hour < 12) {
-                amInput.disabled = false;
-                pmInput.disabled = true;
-                pmInput.value = ""; // 清空不可輸入的欄位
-            } else {
-                amInput.disabled = true;
-                pmInput.disabled = false;
-                amInput.value = "";
-            }
+            const now = new Date(); const hour = now.getHours();
+            const amInput = document.getElementById('l-am'); const pmInput = document.getElementById('l-pm');
+            if (hour < 12) { amInput.disabled = false; pmInput.disabled = true; pmInput.value = ""; } 
+            else { amInput.disabled = true; pmInput.disabled = false; amInput.value = ""; }
         }
 
         function getCleanPB() { const raw = localStorage.getItem(KEYS.PB); if (!raw) return null; try { const p = JSON.parse(raw); return (typeof p === 'object') ? parseInt(p.personalBestPEF) : parseInt(p); } catch(e) { return parseInt(raw) || null; } }
@@ -223,7 +217,7 @@
             allLogs = JSON.parse(localStorage.getItem(KEYS.LOGS) || '[]');
             if(allLogs.length > 0) { const s = document.getElementById('history-selector'); s.innerHTML = '<option value="">-- 查看歷史紀錄 --</option>'; allLogs.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${new Date(l.date || l.timestamp).toLocaleString()} (早:${l.am||'-'}/晚:${l.pm||'-'})`; s.appendChild(o); }); if(pb) renderChart(pb); }
             document.getElementById('last-updated').textContent = new Date().toLocaleString();
-            setupTimeGuidedInputs(); // 初始化時間引導
+            setupTimeGuidedInputs();
         }
 
         document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); const d = { name:document.getElementById('p-name').value, dob:document.getElementById('p-dob').value, record:document.getElementById('p-record').value, doc:document.getElementById('p-doc').value, phone:document.getElementById('p-phone').value }; localStorage.setItem(KEYS.P, JSON.stringify(d)); showMsg("個人資料儲存成功"); };
