@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣喘日誌 V42 - 專業指引更新版</title>
+    <title>氣喘日誌 V44 - 長天數拉動版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
@@ -11,14 +11,18 @@
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f2f2f7; color: #1c1c1e; font-size: 15px; }
         .app-card { background-color: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #e5e5ea; overflow: hidden; }
         .list-row { padding: 12px 16px; border-bottom: 0.5px solid #e5e5ea; display: flex; flex-direction: column; gap: 4px; }
-        input:not([type="checkbox"]), select, textarea { border: 1px solid #d1d1d6 !important; padding: 10px 12px !important; background-color: white !important; border-radius: 6px !important; font-size: 16px; width: 100%; }
+        input:not([type="checkbox"]), select, textarea { border: 1px solid #d1d1d6 !important; padding: 10px 12px !important; border-radius: 6px !important; font-size: 16px; width: 100%; }
         input:disabled { background-color: #f2f2f7 !important; color: #8e8e93 !important; cursor: not-allowed; border: 1px dashed #d1d1d6 !important; }
         .input-field-loaded { color: #9ca3af !important; }
         .input-field-edited { color: #1f2937 !important; font-weight: 500; }
         .zone-green { background-color: #34c759; color: white; border-radius: 8px; padding: 12px; }
         .zone-yellow { background-color: #ff9500; color: white; border-radius: 8px; padding: 12px; }
         .zone-red { background-color: #ff3b30; color: white; border-radius: 8px; padding: 12px; }
-        #chart-container { width: 100%; height: 320px; padding: 10px; }
+        
+        /* 核心修正：水平捲動設計 */
+        #chart-container { width: 100%; height: 320px; padding: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .chart-wrapper { min-width: 100%; height: 260px; } /* 包裹畫布以便動態調整寬度 */
+        
         .act-question { padding: 12px; border-bottom: 1px solid #f2f2f7; }
         .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
         .collapsible-content.expanded { max-height: 5000px; transition: max-height 0.6s ease-in; }
@@ -36,7 +40,7 @@
                     <div><label class="text-sm font-medium text-gray-700">姓名</label><input type="text" id="p-name" required></div>
                     <div><label class="text-sm font-medium text-gray-700">出生年月日</label><input type="date" id="p-dob"></div>
                 </div>
-                <div class="list-row bg-indigo-50"><p>預估年齡: <span id="display-age" class="font-bold text-indigo-800">--</span></p></div>
+                <div class="list-row bg-indigo-50"><p>足歲年齡: <span id="display-age" class="font-bold text-indigo-800">--</span></p></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 list-row">
                     <div><label class="text-sm font-medium text-gray-700">病歷號</label><input type="text" id="p-record"></div>
                     <div><label class="text-sm font-medium text-gray-700">主治醫師</label><input type="text" id="p-doc"></div>
@@ -53,11 +57,11 @@
                 <div class="list-row"><label class="medication-label-strong">額外保養藥物</label><input type="text" id="m-extra" list="list-extra"><select id="f-extra" class="mt-2"><option value="每日一次">每日一次</option></select></div>
                 <div class="list-row"><label class="medication-label-strong">速效緩解藥物 (急救)</label><input type="text" id="m-reliever" list="list-reliever"><select id="f-reliever" class="mt-2"><option value="需要時使用">需要時使用</option><option value="依主治醫師指示">依主治醫師指示</option></select></div>
                 
-                <div class="list-row space-y-2 bg-gray-50 py-3">
+                <div id="check-list" class="list-row space-y-2 bg-gray-50 py-3">
                     <label class="medication-label-strong text-purple-800">其他輔助藥物：</label>
-                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="茶鹼類藥物"><span>茶鹼類藥物 (如XANTHIUM，THOIN)</span></label>
-                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="白三烯素受體拮抗劑"><span>白三烯素受體拮抗劑 (如SINGULAIR)</span></label>
-                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="口服支氣管擴張劑"><span>口服支氣管擴張劑 (如MEPTIN，LUNGTEC)</span></label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="c1"><span>茶鹼類藥物 (如XANTHIUM，THOIN)</span></label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="c2"><span>白三烯素受體拮抗劑 (如SINGULAIR)</span></label>
+                    <label class="flex items-center space-x-3 text-sm"><input type="checkbox" class="med-check w-5 h-5" value="c3"><span>口服支氣管擴張劑 (如MEPTIN，LUNGTEC)</span></label>
                 </div>
             </div>
             <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg shadow-md mb-8">儲存用藥計畫</button>
@@ -66,11 +70,11 @@
         <div class="mt-8">
             <h2 class="text-xl font-semibold text-orange-600 mb-3 ml-2">C. 氣喘控制測驗 (過去四週) (ACT)</h2>
             <div class="app-card">
-                <div class="act-question"><label class="block text-sm mb-1">1. 在職場或學校受氣喘影響工作的程度？</label><select class="act-q"><option value="1">1分 (總是)</option><option value="2">2分 (大部分時間)</option><option value="3">3分 (有時候)</option><option value="4">4分 (很少)</option><option value="5" selected>5分 (完全沒有)</option></select></div>
-                <div class="act-question"><label class="block text-sm mb-1">2. 感覺呼吸短促（喘不過氣）的頻率？</label><select class="act-q"><option value="1">1分 (每天多於一次)</option><option value="2">2分 (每天一次)</option><option value="3">3分 (每週 3-6 次)</option><option value="4">4分 (每週 1-2 次)</option><option value="5" selected>5分 (完全沒有)</option></select></div>
-                <div class="act-question"><label class="block text-sm mb-1">3. 因氣喘症狀而在半夜醒來或早上較早醒來？</label><select class="act-q"><option value="1">1分 (每週 4 次以上)</option><option value="2">2分 (每週 2-3 次)</option><option value="3">3分 (每週一次)</option><option value="4">4分 (每週少於一次)</option><option value="5" selected>5分 (完全沒有)</option></select></div>
-                <div class="act-question"><label class="block text-sm mb-1">4. 使用速效緩解吸入劑（急救藥）的頻率？</label><select class="act-q"><option value="1">1分 (每天 3 次以上)</option><option value="2">2分 (每天 1-2 次)</option><option value="3">3分 (每週 2-3 次)</option><option value="4">4分 (每週 1 次以下)</option><option value="5" selected>5分 (完全沒有)</option></select></div>
-                <div class="act-question"><label class="block text-sm mb-1">5. 您自覺過去四週氣喘控制的狀況？</label><select class="act-q"><option value="1">1分 (很不理想)</option><option value="2">2分 (普通)</option><option value="3">3分 (還可以)</option><option value="4">4分 (良好)</option><option value="5" selected>5分 (完全控制)</option></select></div>
+                <div class="act-question"><label class="block text-sm mb-1">1. 影響工作/學校程度？</label><select class="act-q"><option value="1">1分 (總是)</option><option value="2">2分 (大部)</option><option value="3">3分 (有時)</option><option value="4">4分 (很少)</option><option value="5" selected>5分 (完全沒)</option></select></div>
+                <div class="act-question"><label class="block text-sm mb-1">2. 呼吸短促頻率？</label><select class="act-q"><option value="1">1分 (每天多於一次)</option><option value="2">2分 (每天一次)</option><option value="3">3分 (每週3-6次)</option><option value="4">4分 (每週1-2次)</option><option value="5" selected>5分 (無)</option></select></div>
+                <div class="act-question"><label class="block text-sm mb-1">3. 半夜醒來次數？</label><select class="act-q"><option value="1">1分 (每週4次以上)</option><option value="2">2分 (每週2-3次)</option><option value="3">3分 (每週一次)</option><option value="4">4分 (每週少於一次)</option><option value="5" selected>5分 (無)</option></select></div>
+                <div class="act-question"><label class="block text-sm mb-1">4. 急救藥使用頻率？</label><select class="act-q"><option value="1">1分 (每天3次以上)</option><option value="2">2分 (每天1-2次)</option><option value="3">3分 (每週2-3次)</option><option value="4">4分 (每週1次以下)</option><option value="5" selected>5分 (無)</option></select></div>
+                <div class="act-question"><label class="block text-sm mb-1">5. 您自覺控制狀況？</label><select class="act-q"><option value="1">1分 (很不理想)</option><option value="2">2分 (普通)</option><option value="3">3分 (還可以)</option><option value="4">4分 (良好)</option><option value="5" selected>5分 (完全控制)</option></select></div>
                 <div class="p-4 bg-orange-50 flex justify-between items-center"><span class="font-bold">ACT 總分：<span id="act-total">25</span> 分</span><span id="act-status" class="px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">完全控制</span></div>
             </div>
             <button id="btn-save-act" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg shadow-md mb-8">儲存 ACT 分數</button>
@@ -79,8 +83,9 @@
         <div class="mt-8">
             <h2 class="text-xl font-semibold text-blue-700 mb-3 ml-2">D. 個人最佳 PEF 值 (PB)</h2>
             <div class="app-card p-4">
-                <p class="mb-3">目前基準: <span id="display-pb" class="font-bold text-lg text-blue-600">未設定</span> L/min</p>
-                <div class="flex space-x-3"><input type="number" id="input-pb" placeholder="輸入 PB 值" class="flex-grow"><button id="btn-save-pb" type="button" class="bg-blue-600 text-white font-bold px-6 rounded-lg whitespace-nowrap">儲存</button></div>
+                <p class="mb-1">目前基準: <span id="display-pb" class="font-bold text-lg text-blue-600">未設定</span> L/min</p>
+                <p id="pb-date-info" class="text-xs text-gray-500 mb-3">上次更新: --</p>
+                <div class="flex space-x-3"><input type="number" id="input-pb" placeholder="50-800 L/min" class="flex-grow"><button id="btn-save-pb" type="button" class="bg-blue-600 text-white font-bold px-6 rounded-lg whitespace-nowrap">儲存</button></div>
             </div>
         </div>
 
@@ -88,8 +93,8 @@
             <h2 class="text-xl font-semibold text-green-700 mb-3 ml-2">E. 自我監測紀錄 (每日記錄)</h2>
             <form id="log-form" class="app-card p-4 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-sm font-medium">早晨 PEF (AM)</label><input type="number" id="l-am" placeholder="L/min"></div>
-                    <div><label class="text-sm font-medium">晚間 PEF (PM)</label><input type="number" id="l-pm" placeholder="L/min"></div>
+                    <div><label class="text-sm font-medium">早晨 AM</label><input type="number" id="l-am" min="50" max="800" placeholder="L/min"></div>
+                    <div><label class="text-sm font-medium">晚間 PM</label><input type="number" id="l-pm" min="50" max="800" placeholder="L/min"></div>
                 </div>
                 <textarea id="l-note" placeholder="備註症狀..." rows="2"></textarea>
                 <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-md">儲存時段紀錄</button>
@@ -97,38 +102,37 @@
         </div>
 
         <div id="history-section" class="mt-8 hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">F. 尖峰流速 (PEF) 趨勢圖與歷史紀錄</h2>
-            <div class="app-card"><div id="chart-container"><canvas id="pef-chart"></canvas></div></div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">F. 尖峰流速 (PEF) 趨勢圖</h2>
+            <div class="app-card">
+                <div id="chart-container">
+                    <div class="chart-wrapper" id="chart-wrapper">
+                        <canvas id="pef-chart"></canvas>
+                    </div>
+                </div>
+            </div>
             <div class="app-card p-4"><select id="history-selector" class="mb-4"><option value="">-- 查看歷史紀錄 --</option></select><div id="history-detail" class="p-4 bg-gray-50 rounded-lg text-sm hidden"></div></div>
-            <button id="export-btn" class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-md mt-4 transition-colors">傳送最近 30 日數據至三總</button>
+            <button id="export-btn" class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-md mt-4">傳送最近 30 日數據至三總</button>
         </div>
 
         <div id="guide-section" class="mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-3 ml-2">G. 氣喘惡化應對指南</h2>
             <div class="app-card p-4 space-y-4">
-                <div class="zone-green">
-                    <h3 class="font-bold">🟢 綠燈區 — 情況良好</h3>
-                    <p class="text-sm">PEF 讀數: <span id="range-green">請先設定 PB 值</span></p>
-                    <p class="text-xs mt-1 border-t pt-1 leading-relaxed">建議：維持目前的氣喘控制計畫，回診時可與醫師討論降階治療。</p>
-                </div>
-                <div class="zone-yellow">
-                    <h3 class="font-bold">🟡 黃燈區 — 小心惡化</h3>
-                    <p class="text-sm">PEF 讀數: <span id="range-yellow">請先設定 PB 值</span></p>
-                    <p class="text-xs mt-1 border-t pt-1 leading-relaxed">建議：每隔20分鐘吸急救藥物兩下，若20-60分鐘後仍沒有改善，應儘速返診。</p>
-                </div>
-                <div class="zone-red">
-                    <h3 class="font-bold">🔴 紅燈區 — 嚴重發作！</h3>
-                    <p class="text-sm">PEF 讀數: <span id="range-red">請先設定 PB 值</span></p>
-                    <p class="text-xs mt-1 border-t pt-1 font-bold leading-relaxed">建議：立即吸急救藥物4-6下，身邊若有口服類固醇則立即使用。立刻去急診，途中每3-15分鐘再吸4-6下急救藥物。</p>
-                </div>
+                <div class="zone-green"><h3 class="font-bold">🟢 綠燈區 — 情況良好</h3><p class="text-sm">PEF 讀數: <span id="range-green">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1">建議：維持目前的氣喘控制計畫，回診時可討論降階治療。</p></div>
+                <div class="zone-yellow"><h3 class="font-bold">🟡 黃燈區 — 小心惡化</h3><p class="text-sm">PEF 讀數: <span id="range-yellow">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1">建議：每 20 分鐘吸急救藥兩下，若 1 小時後沒改善應返診。</p></div>
+                <div class="zone-red"><h3 class="font-bold">🔴 紅燈區 — 嚴重發作！</h3><p class="text-sm">PEF 讀數: <span id="range-red">請先設定 PB 值</span></p><p class="text-xs mt-1 border-t pt-1 font-bold">建議：立即吸急救藥物 4-6 下並立刻就醫。</p></div>
             </div>
         </div>
 
-        <div class="mt-10">
+        <div class="mt-8 flex space-x-3">
+            <button onclick="backupData()" class="flex-1 bg-gray-600 text-white py-2 rounded text-xs">備份設定檔 (JSON)</button>
+            <label class="flex-1 bg-gray-600 text-white py-2 rounded text-xs text-center cursor-pointer">還原記錄檔 <input type="file" class="hidden" onchange="restoreData(this)"></label>
+        </div>
+
+        <div class="mt-8">
             <button id="privacy-toggle" class="w-full text-left text-sm text-gray-500 py-2 border-t flex justify-between"><span>隱私權及授權聲明 (點擊展開)</span><span id="toggle-icon">▼</span></button>
             <div id="privacy-content" class="collapsible-content text-xs text-gray-600 p-2 leading-relaxed">
-                <p>1. 本程式為三軍總醫院胸腔內科提供之單機工具，所有資料皆儲存於您目前的瀏覽器本地空間 (LocalStorage)。<span class="text-red-600 font-bold">警告：若您清除瀏覽器快取或更換手機，資料將會遺失。</span></p>
-                <p class="mt-2">2. 匯出功能僅會抓取過去 30 天內之監測數據進行傳輸，以保護效能與隱私，建議至少每月傳輸一次。</p>
+                <p>1. 本程式為單機工具，資料儲存於 LocalStorage。<span class="text-red-600 font-bold">警告：清除快取會導致資料遺失。</span></p>
+                <p class="mt-2">2. 匯出功能僅抓取過去 30 天數據，更久以前請使用「備份」功能保存。</p>
             </div>
         </div>
 
@@ -136,117 +140,115 @@
     </div>
 
     <datalist id="list-main">
-        <option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER">
-        <option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER">
-        <option value="使肺泰 SERETIDE EVOHALER">
-        <option value="潤娃 RELVAR ELLIPTA"><option value="保衛康 ALVESCO INHALER"><option value="肺樂喜 TRELEGY ELLIPTA">
-        <option value="喘寶 TRIMBOW MDI INHALER"><option value="必肺暢 BREZTRI MDI INHALER">
+        <option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER"><option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="使肺泰 SERETIDE EVOHALER"><option value="潤娃 RELVAR ELLIPTA"><option value="保衛康 ALVESCO INHALER"><option value="肺樂喜 TRELEGY ELLIPTA"><option value="喘寶 TRIMBOW MDI INHALER"><option value="必肺暢 BREZTRI MDI INHALER">
     </datalist>
-    <datalist id="list-extra"><option value="適喘樂舒沛噴 SPIRIVA RESPIMAT (每次二口)"><option value="英克賜易利達 INCRUSE ELLIPTA"></datalist>
-    <datalist id="list-reliever"><option value="同保養藥物"><option value="吸必擴 SYMBICORT TURBUHALER"><option value="吸必擴 SYMBICORT RAPIHALER"><option value="肺舒坦 FOSTER MDI INHALER"><option value="肺舒坦 FOSTER NEXHALER"><option value="備喘全 BERODUAL N MDI"><option value="備勞喘 BEROTECL N MDI"></datalist>
+    <datalist id="list-extra"><option value="適喘樂 SPIRIVA RESPIMAT (二口)"><option value="英克賜 INCRUSE ELLIPTA"></datalist>
+    <datalist id="list-reliever"><option value="同保養藥物"><option value="吸必擴 TURBUHALER"><option value="肺舒坦 MDI INHALER"><option value="備喘全 BERODUAL N"><option value="備勞喘 BEROTECL"></datalist>
 
     <div id="msg" class="fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold hidden" style="z-index: 9999;"></div>
 
     <script>
-        const KEYS = { P: 'asthma_p', PB: 'asthma_pb', M: 'asthma_m', LOGS: 'asthma_logs', ACT: 'asthma_act' };
-        const FORM_CFG = { ACTION_URL: 'https://docs.google.com/forms/d/e/YOUR_ID/formResponse', IDS: { NAME: 'entry.1', RECORD: 'entry.2', DOC: 'entry.3', PHONE: 'entry.4', PB: 'entry.5', MEDS: 'entry.6', LOGS: 'entry.7', ACT: 'entry.8' } };
+        const KEYS = { P: 'asthma_p', PB: 'asthma_pb', M: 'asthma_m', LOGS: 'asthma_logs', ACT: 'asthma_act', CHECK: 'asthma_check' };
         let pefChart = null; let allLogs = [];
 
         function showMsg(t, s=true) { const b = document.getElementById('msg'); b.textContent = t; b.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold ${s?'bg-green-600':'bg-red-600'}`; b.classList.remove('hidden'); setTimeout(()=>b.classList.add('hidden'), 3000); }
 
-        function setupTimeGuidedInputs() {
-            const h = new Date().getHours(); const ai = document.getElementById('l-am'); const pi = document.getElementById('l-pm');
-            if (h < 12) { ai.disabled = false; pi.disabled = true; pi.value = ""; } else { ai.disabled = true; pi.disabled = false; ai.value = ""; }
-        }
+        function calcAge(dob) { if(!dob) return "--"; const b = new Date(dob); const n = new Date(); let a = n.getFullYear()-b.getFullYear(); const m = n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate())) a--; return a + " 歲"; }
 
-        function getCleanPB() { const r = localStorage.getItem(KEYS.PB); if (!r) return null; try { const p = JSON.parse(r); return (typeof p === 'object') ? parseInt(p.personalBestPEF) : parseInt(p); } catch(e) { return parseInt(r) || null; } }
+        function getCleanPB() { const r = localStorage.getItem(KEYS.PB); if(!r) return null; try { const p = JSON.parse(r); return p.personalBestPEF ? parseInt(p.personalBestPEF) : null; } catch(e) { return parseInt(r) || null; } }
 
         function updateRanges(pb) {
-            const v = parseInt(pb); if(!v || isNaN(v)) return;
+            const v = parseInt(pb); if(!v) return;
             document.getElementById('display-pb').textContent = v + " L/min";
             document.getElementById('range-green').textContent = `${Math.ceil(v*0.8)} ~ ${v} L/min`;
             document.getElementById('range-yellow').textContent = `${Math.ceil(v*0.5)} ~ ${Math.ceil(v*0.8)-1} L/min`;
             document.getElementById('range-red').textContent = `低於 ${Math.ceil(v*0.5)} L/min`;
+            
+            const raw = JSON.parse(localStorage.getItem(KEYS.PB) || '{}');
+            const info = document.getElementById('pb-date-info');
+            if(raw.updatedAt) {
+                const last = new Date(raw.updatedAt); info.textContent = "上次更新: " + last.toLocaleDateString();
+                if(Date.now() - raw.updatedAt > 180*24*60*60*1000) { info.className = "text-xs font-bold text-red-600 animate-pulse"; info.textContent += " (建議重新檢測)"; }
+            }
             document.getElementById('log-input-section').classList.remove('hidden');
             document.getElementById('history-section').classList.remove('hidden');
             renderChart(v);
         }
 
+        // V44 核心優化：水平滑動邏輯
         function renderChart(pb) {
-            const ctxEl = document.getElementById('pef-chart'); if (!ctxEl) return;
+            const ctxEl = document.getElementById('pef-chart'); if(!ctxEl) return;
+            const container = document.getElementById('chart-container');
+            const wrapper = document.getElementById('chart-wrapper');
+            
             const daily = {};
             allLogs.forEach(log => {
-                const d = new Date(log.date || log.timestamp).toLocaleDateString('zh-TW'); const h = new Date(log.date || log.timestamp).getHours();
+                const d = new Date(log.date || log.timestamp).toLocaleDateString('zh-TW');
+                const h = new Date(log.date || log.timestamp).getHours();
                 if (!daily[d]) daily[d] = { am: null, pm: null };
-                const av = log.am; const pv = log.pm;
-                if (h < 12 && av) daily[d].am = Math.max(daily[d].am || 0, av);
-                if (h >= 12 && pv) daily[d].pm = Math.max(daily[d].pm || 0, pv);
+                if (h < 12 && log.am) daily[d].am = Math.max(daily[d].am || 0, log.am);
+                if (h >= 12 && log.pm) daily[d].pm = Math.max(daily[d].pm || 0, log.pm);
             });
-            const sorted = Object.keys(daily).sort((a,b) => new Date(a) - new Date(b));
+
+            const sortedKeys = Object.keys(daily).sort((a,b) => new Date(a) - new Date(b));
             const labels = []; const data = []; const colors = [];
-            sorted.forEach(d => {
+            sortedKeys.forEach(d => {
                 const dd = d.split('/')[1] + '/' + d.split('/')[2];
-                if (daily[d].am !== null) { labels.push(dd + " AM"); data.push(daily[d].am); colors.push('#34c759'); }
-                if (daily[d].pm !== null) { labels.push(dd + " PM"); data.push(daily[d].pm); colors.push('#007aff'); }
+                if (daily[d].am) { labels.push(dd + " AM"); data.push(daily[d].am); colors.push('#34c759'); }
+                if (daily[d].pm) { labels.push(dd + " PM"); data.push(daily[d].pm); colors.push('#007aff'); }
             });
+
+            // 計算寬度：預設每 30 天佔滿一螢幕，多出則延伸
+            const pointCount = labels.length;
+            const minWidthPerPoint = 35; // 每個數據點佔用的寬度
+            const calculatedWidth = Math.max(container.clientWidth, pointCount * minWidthPerPoint);
+            wrapper.style.width = calculatedWidth + "px";
+
             if (pefChart) pefChart.destroy();
             const gT = Math.ceil(pb * 0.8), rT = Math.ceil(pb * 0.5);
             pefChart = new Chart(ctxEl.getContext('2d'), {
                 type: 'line', data: { labels: labels, datasets: [{ label: 'PEF 趨勢', data: data, borderColor: '#8e8e93', borderWidth: 2, pointBackgroundColor: colors, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, suggestedMax: pb * 1.1 } } },
-                plugins: [{ id: 'lines', afterDraw(chart) { const {ctx, chartArea: {left, right}, scales: {y}} = chart; ctx.save(); ctx.setLineDash([6, 4]); ctx.lineWidth = 2; const gy = y.getPixelForValue(gT); ctx.strokeStyle = 'rgba(52, 199, 89, 0.7)'; ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke(); const ry = y.getPixelForValue(rT); ctx.strokeStyle = 'rgba(255, 59, 48, 0.7)'; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.restore(); } }]
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { y: { min: 0, suggestedMax: pb * 1.1 } } 
+                },
+                plugins: [{ id: 'lines', afterDraw(c) { const {ctx, chartArea:{left, right}, scales:{y}} = c; ctx.save(); ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5; const gy = y.getPixelForValue(gT); ctx.strokeStyle = 'rgba(52,199,89,0.7)'; ctx.stroke(new Path2D(`M${left} ${gy}L${right} ${gy}`)); const ry = y.getPixelForValue(rT); ctx.strokeStyle = 'rgba(255,59,48,0.7)'; ctx.stroke(new Path2D(`M${left} ${ry}L${right} ${ry}`)); ctx.restore(); } }]
             });
+            
+            // 自動滾動到最右側 (最新數據)
+            setTimeout(() => { container.scrollLeft = container.scrollWidth; }, 100);
         }
 
-        // 更新 ACT 說明邏輯
-        function calculateACT() {
-            let t = 0; document.querySelectorAll('.act-q').forEach(q => t += parseInt(q.value));
-            document.getElementById('act-total').textContent = t; const s = document.getElementById('act-status');
-            if (t === 25) { s.textContent = "完全控制"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white"; }
-            else if (t >= 20) { s.textContent = "控制良好"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white"; }
-            else if (t >= 16) { s.textContent = "控制不佳"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-orange-500 text-white"; }
-            else { s.textContent = "控制極差"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white"; }
-            return t;
-        }
-
-        document.querySelectorAll('.act-q').forEach(q => q.onchange = calculateACT);
-        document.getElementById('btn-save-act').onclick = () => { localStorage.setItem(KEYS.ACT, calculateACT()); showMsg("ACT 分數已儲存"); };
-
-        document.getElementById('export-btn').onclick = async function() {
-            const b = this; if (b.disabled) return; b.disabled = true; b.textContent = '傳送中...'; b.classList.replace('bg-pink-600', 'bg-gray-400');
-            try {
-                const p = JSON.parse(localStorage.getItem(KEYS.P) || '{}'), m = JSON.parse(localStorage.getItem(KEYS.M) || '{}'), act = localStorage.getItem(KEYS.ACT) || '未測驗';
-                const fLogs = allLogs.filter(l => (l.date || l.timestamp) >= (Date.now() - 2592000000));
-                const lTxt = fLogs.map(l => `${new Date(l.date||l.timestamp).toLocaleString()}: 早${l.am||'-'}/晚${l.pm||'-'} 備註:${l.note||''}`).join('\n');
-                const checks = []; document.querySelectorAll('.med-check:checked').forEach(c => checks.push(c.value));
-                const formData = new FormData();
-                formData.append(FORM_CFG.IDS.NAME, p.name || ''); formData.append(FORM_CFG.IDS.RECORD, p.record || '');
-                formData.append(FORM_CFG.IDS.PB, getCleanPB() || ''); formData.append(FORM_CFG.IDS.ACT, act);
-                formData.append(FORM_CFG.IDS.MEDS, `主:${m.main} 輔助:${checks.join(',')}`); formData.append(FORM_CFG.IDS.LOGS, lTxt);
-                await fetch(FORM_CFG.ACTION_URL, { method: 'POST', mode: 'no-cors', body: formData }); showMsg("數據已傳送至三總", true);
-            } catch (err) { showMsg("傳送失敗", false); }
-            setTimeout(() => { b.disabled = false; b.textContent = '傳送最近 30 日數據至三總'; b.classList.replace('bg-gray-400', 'bg-pink-600'); }, 5000);
-        };
+        function backupData() { const d = {}; for(let k in KEYS) d[k] = localStorage.getItem(KEYS[k]); const blob = new Blob([JSON.stringify(d)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Asthma_V44_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        function restoreData(i) { const f = i.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { const d = JSON.parse(e.target.result); for(let k in d) if(d[k]) localStorage.setItem(k, d[k]); showMsg("還原成功，刷新中..."); setTimeout(()=>location.reload(), 1500); } catch(err) { showMsg("無效檔案", false); } }; r.readAsText(f); }
+        function validatePEF(v) { const val = parseInt(v); if(isNaN(val) || val < 50 || val > 800) { showMsg("範圍 50-800", false); return false; } return true; }
 
         function load() {
             const p = JSON.parse(localStorage.getItem(KEYS.P) || '{}');
-            if(p.name){ document.getElementById('p-name').value=p.name; document.getElementById('p-dob').value=p.dob || ''; document.getElementById('p-record').value=p.record || ''; document.getElementById('p-doc').value=p.doc || ''; document.getElementById('p-phone').value=p.phone || '0287923311#10121'; if(p.dob) document.getElementById('display-age').textContent = (new Date().getFullYear()-new Date(p.dob).getFullYear())+" 歲"; }
+            if(p.name){ document.getElementById('p-name').value=p.name; document.getElementById('p-dob').value=p.dob || ''; document.getElementById('display-age').textContent = calcAge(p.dob); document.getElementById('p-record').value=p.record || ''; document.getElementById('p-doc').value=p.doc || ''; document.getElementById('p-phone').value=p.phone || '0287923311#10121'; }
             const pb = getCleanPB(); if(pb) { document.getElementById('input-pb').value = pb; updateRanges(pb); }
             const m = JSON.parse(localStorage.getItem(KEYS.M) || '{}');
-            if(m.main){ const map={'m-main':m.main,'f-main':m.fMain,'m-extra':m.extra,'f-extra':m.fExtra,'m-reliever':m.reliever,'f-reliever':m.fReliever}; for(let id in map){ const el=document.getElementById(id); if(el && map[id]) el.value=map[id]; }}
+            if(m.main) { document.getElementById('m-main').value=m.main; document.getElementById('f-main').value=m.fMain; document.getElementById('m-extra').value=m.extra; document.getElementById('f-extra').value=m.fExtra; document.getElementById('m-reliever').value=m.reliever; document.getElementById('f-reliever').value=m.fReliever; }
+            const checks = JSON.parse(localStorage.getItem(KEYS.CHECK) || '[]'); document.querySelectorAll('.med-check').forEach((c) => c.checked = checks.includes(c.value));
             allLogs = JSON.parse(localStorage.getItem(KEYS.LOGS) || '[]');
-            if(allLogs.length > 0) { const s = document.getElementById('history-selector'); s.innerHTML = '<option value="">-- 查看歷史紀錄 --</option>'; allLogs.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${new Date(l.date || l.timestamp).toLocaleString()} (早:${l.am||'-'}/晚:${l.pm||'-'})`; s.appendChild(o); }); if(pb) renderChart(pb); }
+            if(allLogs.length > 0) {
+                const s = document.getElementById('history-selector'); s.innerHTML = '<option value="">-- 查看歷史紀錄 --</option>';
+                allLogs.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${new Date(l.date || l.timestamp).toLocaleString()} (早:${l.am||'-'}/晚:${l.pm||'-'})`; s.appendChild(o); });
+                if(pb) renderChart(pb);
+            }
             document.getElementById('last-updated').textContent = new Date().toLocaleString();
-            setupTimeGuidedInputs();
+            const h = new Date().getHours(); document.getElementById('l-am').disabled = h >= 12; document.getElementById('l-pm').disabled = h < 12;
         }
 
-        document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); const d = { name:document.getElementById('p-name').value, dob:document.getElementById('p-dob').value, record:document.getElementById('p-record').value, doc:document.getElementById('p-doc').value, phone:document.getElementById('p-phone').value }; localStorage.setItem(KEYS.P, JSON.stringify(d)); showMsg("個人資料儲存成功"); };
-        document.getElementById('btn-save-pb').onclick = () => { const v = document.getElementById('input-pb').value; if(!v || v<=0) return showMsg("無效數值", false); localStorage.setItem(KEYS.PB, JSON.stringify({personalBestPEF: v, updatedAt: Date.now()})); updateRanges(parseInt(v)); showMsg("基準值已儲存"); };
-        document.getElementById('meds-form').onsubmit = (e) => { e.preventDefault(); const d = { main:document.getElementById('m-main').value, fMain:document.getElementById('f-main').value, extra:document.getElementById('m-extra').value, fExtra:document.getElementById('f-extra').value, reliever:document.getElementById('m-reliever').value, fReliever:document.getElementById('f-reliever').value }; localStorage.setItem(KEYS.M, JSON.stringify(d)); showMsg("用藥計畫儲存成功"); };
-        document.getElementById('log-form').onsubmit = (e) => { e.preventDefault(); const am = parseInt(document.getElementById('l-am').value); const pm = parseInt(document.getElementById('l-pm').value); if(isNaN(am) && isNaN(pm)) return showMsg("請輸入數值", false); allLogs.unshift({ date:Date.now(), am: isNaN(am)?null:am, pm: isNaN(pm)?null:pm, note:document.getElementById('l-note').value }); localStorage.setItem(KEYS.LOGS, JSON.stringify(allLogs)); location.reload(); };
-        document.getElementById('history-selector').onchange = (e) => { const d = document.getElementById('history-detail'); const l = allLogs[e.target.value]; if(!l) { d.classList.add('hidden'); return; } const amVal = l.am || '--', pmVal = l.pm || '--'; d.innerHTML = `<p><strong>時間：</strong>${new Date(l.date || l.timestamp).toLocaleString()}</p><p><strong>早晨：</strong>${amVal} L/min</p><p><strong>晚間：</strong>${pmVal} L/min</p><p><strong>備註：</strong>${l.note || '無'}</p>`; d.classList.remove('hidden'); };
+        document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); const d = { name:document.getElementById('p-name').value, dob:document.getElementById('p-dob').value, record:document.getElementById('p-record').value, doc:document.getElementById('p-doc').value, phone:document.getElementById('p-phone').value }; localStorage.setItem(KEYS.P, JSON.stringify(d)); document.getElementById('display-age').textContent = calcAge(d.dob); showMsg("儲存成功"); };
+        document.getElementById('btn-save-pb').onclick = () => { const v = document.getElementById('input-pb').value; if(!validatePEF(v)) return; localStorage.setItem(KEYS.PB, JSON.stringify({personalBestPEF: v, updatedAt: Date.now()})); updateRanges(parseInt(v)); showMsg("儲存成功"); };
+        document.getElementById('meds-form').onsubmit = (e) => { e.preventDefault(); const d = { main:document.getElementById('m-main').value, fMain:document.getElementById('f-main').value, extra:document.getElementById('m-extra').value, fExtra:document.getElementById('f-extra').value, reliever:document.getElementById('m-reliever').value, fReliever:document.getElementById('f-reliever').value }; localStorage.setItem(KEYS.M, JSON.stringify(d)); const checks = Array.from(document.querySelectorAll('.med-check:checked')).map(c => c.value); localStorage.setItem(KEYS.CHECK, JSON.stringify(checks)); showMsg("儲存成功"); };
+        document.getElementById('log-form').onsubmit = (e) => { e.preventDefault(); const am = document.getElementById('l-am').value; const pm = document.getElementById('l-pm').value; if(am && !validatePEF(am)) return; if(pm && !validatePEF(pm)) return; allLogs.unshift({ date:Date.now(), am: parseInt(am)||null, pm: parseInt(pm)||null, note:document.getElementById('l-note').value }); localStorage.setItem(KEYS.LOGS, JSON.stringify(allLogs)); location.reload(); };
+        document.getElementById('history-selector').onchange = (e) => { const d = document.getElementById('history-detail'); const l = allLogs[e.target.value]; if(!l) { d.classList.add('hidden'); return; } d.innerHTML = `<p><strong>時間：</strong>${new Date(l.date || l.timestamp).toLocaleString()}</p><p><strong>早晨：</strong>${l.am||'--'} L/min</p><p><strong>晚間：</strong>${l.pm||'--'} L/min</p><p><strong>備註：</strong>${l.note || '無'}</p>`; d.classList.remove('hidden'); };
         document.getElementById('privacy-toggle').onclick = () => { document.getElementById('privacy-content').classList.toggle('expanded'); document.getElementById('toggle-icon').textContent = document.getElementById('privacy-content').classList.contains('expanded') ? '▲' : '▼'; };
-
+        function calculateACT() { let t = 0; document.querySelectorAll('.act-q').forEach(q => t += parseInt(q.value)); document.getElementById('act-total').textContent = t; const s = document.getElementById('act-status'); if (t === 25) { s.textContent = "完全控制"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white"; } else if (t >= 20) { s.textContent = "控制良好"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-blue-500 text-white"; } else if (t >= 16) { s.textContent = "控制不佳"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-orange-500 text-white"; } else { s.textContent = "控制極差"; s.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white"; } return t; }
+        document.querySelectorAll('.act-q').forEach(q => q.onchange = calculateACT);
+        document.getElementById('btn-save-act').onclick = () => { localStorage.setItem(KEYS.ACT, calculateACT()); showMsg("ACT 分數已儲存"); };
         window.onload = load;
     </script>
 </body>
